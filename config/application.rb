@@ -16,12 +16,15 @@ module Botburrow
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
-    # Configuration for the application, engines, and railties goes here.
-    #
-    # These settings can be overridden in specific environments using the files
-    # in config/environments, which are processed later.
-    #
-    # config.time_zone = "Central Time (US & Canada)"
-    # config.eager_load_paths << Rails.root.join("extras")
+    config.wnd_socket_path = ENV.fetch("WND_SOCKET_PATH") {
+      default_data_dir = if RUBY_PLATFORM.include?("darwin")
+        File.join(Dir.home, "Library", "Application Support", "whitenoise-cli")
+      else
+        File.join(ENV.fetch("XDG_DATA_HOME", File.join(Dir.home, ".local", "share")), "whitenoise-cli")
+      end
+      data_dir = ENV.fetch("WND_DATA_DIR", default_data_dir)
+      mode = ENV.fetch("WND_BUILD_MODE", "release")
+      File.join(data_dir, mode, "wnd.sock")
+    }
   end
 end

@@ -1,0 +1,24 @@
+<%= turbo_stream_from "bots" %>
+
+<h1>Bots</h1>
+
+<p><%= link_to "New bot", new_bot_path %></p>
+
+<% if @bots.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Npub</th>
+        <th>Status</th>
+        <th>Commands</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <%= render @bots %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No bots yet.</p>
+<% end %>

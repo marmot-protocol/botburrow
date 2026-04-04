@@ -1,0 +1,37 @@
+<% if command.errors.any? %>
+  <div>
+    <h2><%= pluralize(command.errors.count, "error") %> prohibited this command from being saved:</h2>
+    <ul>
+      <% command.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: [bot, command] do |form| %>
+  <div>
+    <%= form.label :name %>
+    <%= form.text_field :name, required: true, placeholder: "ping" %>
+  </div>
+
+  <div>
+    <%= form.label :pattern %>
+    <%= form.text_field :pattern, required: true, placeholder: "/ping" %>
+    <small>The text pattern to match against incoming messages.</small>
+  </div>
+
+  <div>
+    <%= form.label :response_text %>
+    <%= form.text_area :response_text, required: true, rows: 3, placeholder: "pong" %>
+  </div>
+
+  <div>
+    <%= form.label :enabled %>
+    <%= form.check_box :enabled %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>

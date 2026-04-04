@@ -24,6 +24,30 @@
   </head>
 
   <body>
-    <%= yield %>
+    <header>
+      <nav>
+        <%= link_to "Botburrow", root_path %>
+        <% if authenticated? %>
+          <%= button_to "Log out", session_path, method: :delete %>
+        <% end %>
+      </nav>
+    </header>
+
+    <% if flash[:notice] %>
+      <div role="status"><%= flash[:notice] %></div>
+    <% end %>
+    <% if flash[:alert] %>
+      <div role="alert"><%= flash[:alert] %></div>
+    <% end %>
+
+    <% if authenticated? && listener_stale? %>
+      <div role="alert" style="background: #fef3cd; padding: 0.75rem; border-bottom: 1px solid #ffc107;">
+        <strong>Warning:</strong> Message listener is not running. Bots will not respond.
+      </div>
+    <% end %>
+
+    <main>
+      <%= yield %>
+    </main>
   </body>
 </html>

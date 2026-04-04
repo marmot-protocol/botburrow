@@ -1,0 +1,71 @@
+<h1><%= @bot.name %></h1>
+
+<dl>
+  <dt>Npub</dt>
+  <dd><code><%= @bot.display_npub %></code></dd>
+
+  <% if @bot.description.present? %>
+    <dt>Description</dt>
+    <dd><%= @bot.description %></dd>
+  <% end %>
+
+  <dt>Status</dt>
+  <dd><%= @bot.status %></dd>
+
+  <% if @bot.error_message.present? %>
+    <dt>Error</dt>
+    <dd><%= @bot.error_message %></dd>
+  <% end %>
+
+  <dt>Auto-accept invitations</dt>
+  <dd><%= @bot.auto_accept_invitations? ? "Yes" : "No" %></dd>
+
+  <dt>Created</dt>
+  <dd><%= @bot.created_at.to_fs(:long) %></dd>
+</dl>
+
+<div>
+  <% if @bot.stopped? || @bot.error? %>
+    <%= button_to "Start", start_bot_path(@bot), method: :post %>
+  <% end %>
+  <% if @bot.running? || @bot.starting? %>
+    <%= button_to "Stop", stop_bot_path(@bot), method: :post %>
+  <% end %>
+  <%= link_to "Edit", edit_bot_path(@bot) %>
+  <%= button_to "Delete", bot_path(@bot), method: :delete, data: { turbo_confirm: "Are you sure?" } %>
+</div>
+
+<h2>Commands</h2>
+
+<% if @bot.commands.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Pattern</th>
+        <th>Response</th>
+        <th>Enabled</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @bot.commands.order(:position).each do |command| %>
+        <tr>
+          <td><%= command.name %></td>
+          <td><code><%= command.pattern %></code></td>
+          <td><%= truncate(command.response_text, length: 50) %></td>
+          <td><%= command.enabled? ? "Yes" : "No" %></td>
+          <td>
+            <%= link_to "Edit", edit_bot_command_path(@bot, command) %>
+            <%= button_to "Delete", bot_command_path(@bot, command), method: :delete, data: { turbo_confirm: "Are you sure?" } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No commands yet.</p>
+<% end %>
+
+<p><%= link_to "New command", new_bot_command_path(@bot) %></p>
+<p><%= link_to "Back to bots", bots_path %></p>

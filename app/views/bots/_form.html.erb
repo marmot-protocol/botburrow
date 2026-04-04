@@ -1,0 +1,31 @@
+<% if bot.errors.any? %>
+  <div>
+    <h2><%= pluralize(bot.errors.count, "error") %> prohibited this bot from being saved:</h2>
+    <ul>
+      <% bot.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: bot do |form| %>
+  <div>
+    <%= form.label :name %>
+    <%= form.text_field :name, required: true %>
+  </div>
+
+  <div>
+    <%= form.label :description %>
+    <%= form.text_area :description, rows: 2, placeholder: "What does this bot do?" %>
+  </div>
+
+  <div>
+    <%= form.label :auto_accept_invitations %>
+    <%= form.check_box :auto_accept_invitations %>
+  </div>
+
+  <div>
+    <%= form.submit data: { turbo_submits_with: "Saving..." } %>
+  </div>
+<% end %>

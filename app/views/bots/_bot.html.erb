@@ -1,0 +1,14 @@
+<tr id="<%= dom_id(bot) %>">
+  <td><%= link_to bot.name, bot_path(bot) %></td>
+  <td><code><%= truncate(bot.display_npub, length: 24) %></code></td>
+  <td><%= bot.status %></td>
+  <td><%= bot.commands.count %></td>
+  <td>
+    <% if bot.stopped? || bot.error? %>
+      <%= button_to "Start", start_bot_path(bot), method: :post %>
+    <% end %>
+    <% if bot.running? || bot.starting? %>
+      <%= button_to "Stop", stop_bot_path(bot), method: :post %>
+    <% end %>
+  </td>
+</tr>
