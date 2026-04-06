@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_04_005138) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_04_014901) do
   create_table "bots", force: :cascade do |t|
     t.boolean "auto_accept_invitations", default: true, null: false
     t.datetime "created_at", null: false
@@ -29,12 +29,39 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_04_005138) do
     t.boolean "enabled", default: true, null: false
     t.string "name", null: false
     t.string "pattern", null: false
-    t.integer "pattern_type", default: 0, null: false
-    t.integer "position"
     t.text "response_text", null: false
+    t.integer "response_type", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["bot_id", "pattern"], name: "index_commands_on_bot_id_and_pattern", unique: true
     t.index ["bot_id"], name: "index_commands_on_bot_id"
+  end
+
+  create_table "message_logs", force: :cascade do |t|
+    t.string "author", null: false
+    t.integer "bot_id", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.string "direction", null: false
+    t.string "group_id", null: false
+    t.datetime "message_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bot_id", "group_id"], name: "index_message_logs_on_bot_id_and_group_id"
+    t.index ["bot_id", "message_at"], name: "index_message_logs_on_bot_id_and_message_at"
+    t.index ["bot_id"], name: "index_message_logs_on_bot_id"
+  end
+
+  create_table "scheduled_actions", force: :cascade do |t|
+    t.text "action_config", null: false
+    t.integer "action_type", default: 0, null: false
+    t.integer "bot_id", null: false
+    t.datetime "created_at", null: false
+    t.boolean "enabled", default: true, null: false
+    t.datetime "last_run_at"
+    t.string "name", null: false
+    t.datetime "next_run_at"
+    t.string "schedule", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bot_id"], name: "index_scheduled_actions_on_bot_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -54,6 +81,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_04_005138) do
     t.index ["key"], name: "index_settings_on_key", unique: true
   end
 
+  create_table "triggers", force: :cascade do |t|
+    t.text "action_config"
+    t.integer "action_type", default: 0, null: false
+    t.integer "bot_id", null: false
+    t.integer "condition_type", default: 0, null: false
+    t.string "condition_value"
+    t.datetime "created_at", null: false
+    t.boolean "enabled", default: true, null: false
+    t.integer "event_type", default: 0, null: false
+    t.string "name", null: false
+    t.integer "position"
+    t.datetime "updated_at", null: false
+    t.index ["bot_id"], name: "index_triggers_on_bot_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email_address", null: false
@@ -62,6 +104,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_04_005138) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  create_table "webhook_deliveries", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "delivered_at"
+    t.string "event_type", null: false
+    t.text "request_body"
+    t.text "response_body"
+    t.integer "response_status"
+    t.boolean "success", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.integer "webhook_endpoint_id", null: false
+    t.index ["webhook_endpoint_id"], name: "index_webhook_deliveries_on_webhook_endpoint_id"
+  end
+
+  create_table "webhook_endpoints", force: :cascade do |t|
+    t.integer "bot_id", null: false
+    t.datetime "created_at", null: false
+    t.boolean "enabled", default: true, null: false
+    t.string "name", null: false
+    t.string "secret"
+    t.datetime "updated_at", null: false
+    t.string "url", null: false
+    t.index ["bot_id"], name: "index_webhook_endpoints_on_bot_id"
+  end
+
   add_foreign_key "commands", "bots"
+  add_foreign_key "message_logs", "bots"
+  add_foreign_key "scheduled_actions", "bots"
   add_foreign_key "sessions", "users"
+  add_foreign_key "triggers", "bots"
+  add_foreign_key "webhook_deliveries", "webhook_endpoints"
+  add_foreign_key "webhook_endpoints", "bots"
 end

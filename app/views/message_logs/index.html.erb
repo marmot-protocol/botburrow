@@ -1,0 +1,42 @@
+<h1>Message Logs for <%= @bot.name %></h1>
+
+<%= form_tag bot_message_logs_path(@bot), method: :get do %>
+  <div>
+    <%= label_tag :group_id, "Group ID" %>
+    <%= text_field_tag :group_id, params[:group_id], placeholder: "Filter by group ID" %>
+
+    <%= label_tag :direction, "Direction" %>
+    <%= select_tag :direction, options_for_select([["All", ""], ["Incoming", "incoming"], ["Outgoing", "outgoing"]], params[:direction]) %>
+
+    <%= submit_tag "Filter" %>
+  </div>
+<% end %>
+
+<% if @logs.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Direction</th>
+        <th>Group ID</th>
+        <th>Author</th>
+        <th>Content</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @logs.each do |log| %>
+        <tr>
+          <td><%= log.message_at.to_fs(:short) %></td>
+          <td><%= log.direction %></td>
+          <td><code><%= truncate(log.group_id, length: 20) %></code></td>
+          <td><%= truncate(log.author, length: 20) %></td>
+          <td><%= truncate(log.content, length: 80) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No message logs found.</p>
+<% end %>
+
+<p><%= link_to "Back to bot", bot_path(@bot) %></p>

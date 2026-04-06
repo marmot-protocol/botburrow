@@ -1,0 +1,38 @@
+<h1>Scheduled Actions for <%= @bot.name %></h1>
+
+<% if @scheduled_actions.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Schedule</th>
+        <th>Action</th>
+        <th>Enabled</th>
+        <th>Last run</th>
+        <th>Next run</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @scheduled_actions.each do |action| %>
+        <tr>
+          <td><%= action.name %></td>
+          <td><code><%= action.schedule %></code></td>
+          <td><%= action.action_type.humanize %></td>
+          <td><%= action.enabled? ? "Yes" : "No" %></td>
+          <td><%= action.last_run_at&.to_fs(:short) || "Never" %></td>
+          <td><%= action.next_run_at&.to_fs(:short) || "Not scheduled" %></td>
+          <td>
+            <%= link_to "Edit", edit_bot_scheduled_action_path(@bot, action) %>
+            <%= button_to "Delete", bot_scheduled_action_path(@bot, action), method: :delete, data: { turbo_confirm: "Are you sure?" } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No scheduled actions yet.</p>
+<% end %>
+
+<p><%= link_to "New scheduled action", new_bot_scheduled_action_path(@bot) %></p>
+<p><%= link_to "Back to bot", bot_path(@bot) %></p>

@@ -24,12 +24,28 @@ module Wnd
       request("keys_publish", account: account)
     end
 
+    def create_group(account:, name:, members: [])
+      request("create_group", account: account, name: name, members: members)
+    end
+
+    def add_members(account:, group_id:, members:)
+      request("add_members", account: account, group_id: group_id, members: members)
+    end
+
+    def logout(pubkey:)
+      request("logout", pubkey: pubkey)
+    end
+
     def groups_invites(account:)
       request("group_invites", account: account)
     end
 
     def groups_accept(account:, group_id:)
       request("accept_invite", account: account, group_id: group_id)
+    end
+
+    def groups_decline(account:, group_id:)
+      request("decline_invite", account: account, group_id: group_id)
     end
 
     def groups_list(account:)
@@ -40,7 +56,7 @@ module Wnd
       stream("notifications_subscribe", &block)
     end
 
-    def messages_subscribe(account:, group_id:, limit: 0, &block)
+    def messages_subscribe(account:, group_id:, limit: nil, &block)
       stream("messages_subscribe", account: account, group_id: group_id, limit: limit, &block)
     end
 

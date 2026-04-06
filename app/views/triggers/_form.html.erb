@@ -1,0 +1,52 @@
+<% if trigger.errors.any? %>
+  <div>
+    <h2><%= pluralize(trigger.errors.count, "error") %> prohibited this trigger from being saved:</h2>
+    <ul>
+      <% trigger.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: [bot, trigger] do |form| %>
+  <div>
+    <%= form.label :name %>
+    <%= form.text_field :name, required: true, placeholder: "Welcome message" %>
+  </div>
+
+  <div>
+    <%= form.label :event_type %>
+    <%= form.select :event_type, Trigger.event_types.keys.map { |k| [k.humanize, k] } %>
+  </div>
+
+  <div>
+    <%= form.label :condition_type %>
+    <%= form.select :condition_type, Trigger.condition_types.keys.map { |k| [k.humanize, k] } %>
+  </div>
+
+  <div>
+    <%= form.label :condition_value %>
+    <%= form.text_field :condition_value, placeholder: "hello" %>
+    <small>Leave blank for "any" condition type.</small>
+  </div>
+
+  <div>
+    <%= form.label :action_type %>
+    <%= form.select :action_type, Trigger.action_types.keys.map { |k| [k.humanize, k] } %>
+  </div>
+
+  <div>
+    <%= form.label :action_config, "Action config (JSON)" %>
+    <%= form.text_area :action_config, rows: 3, placeholder: '{"response_text": "Hello!"}' %>
+  </div>
+
+  <div>
+    <%= form.label :enabled %>
+    <%= form.check_box :enabled %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>

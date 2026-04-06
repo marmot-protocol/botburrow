@@ -1,0 +1,32 @@
+<h1>Webhook Endpoints for <%= @bot.name %></h1>
+
+<% if @webhook_endpoints.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>URL</th>
+        <th>Enabled</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @webhook_endpoints.each do |endpoint| %>
+        <tr>
+          <td><%= endpoint.name %></td>
+          <td><code><%= endpoint.url %></code></td>
+          <td><%= endpoint.enabled? ? "Yes" : "No" %></td>
+          <td>
+            <%= link_to "Edit", edit_bot_webhook_endpoint_path(@bot, endpoint) %>
+            <%= button_to "Delete", bot_webhook_endpoint_path(@bot, endpoint), method: :delete, data: { turbo_confirm: "Are you sure?" } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No webhook endpoints yet.</p>
+<% end %>
+
+<p><%= link_to "New webhook endpoint", new_bot_webhook_endpoint_path(@bot) %></p>
+<p><%= link_to "Back to bot", bot_path(@bot) %></p>

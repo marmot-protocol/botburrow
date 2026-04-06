@@ -1,0 +1,41 @@
+<h1>Triggers for <%= @bot.name %></h1>
+
+<% if @triggers.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Event</th>
+        <th>Condition</th>
+        <th>Action</th>
+        <th>Enabled</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @triggers.each do |trigger| %>
+        <tr>
+          <td><%= trigger.name %></td>
+          <td><%= trigger.event_type.humanize %></td>
+          <td>
+            <%= trigger.condition_type.humanize %>
+            <% if trigger.condition_value.present? %>
+              (<code><%= trigger.condition_value %></code>)
+            <% end %>
+          </td>
+          <td><%= trigger.action_type.humanize %></td>
+          <td><%= trigger.enabled? ? "Yes" : "No" %></td>
+          <td>
+            <%= link_to "Edit", edit_bot_trigger_path(@bot, trigger) %>
+            <%= button_to "Delete", bot_trigger_path(@bot, trigger), method: :delete, data: { turbo_confirm: "Are you sure?" } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No triggers yet.</p>
+<% end %>
+
+<p><%= link_to "New trigger", new_bot_trigger_path(@bot) %></p>
+<p><%= link_to "Back to bot", bot_path(@bot) %></p>

@@ -1,5 +1,9 @@
 class Bot < ApplicationRecord
   has_many :commands, dependent: :destroy
+  has_many :triggers, dependent: :destroy
+  has_many :scheduled_actions, dependent: :destroy
+  has_many :webhook_endpoints, dependent: :destroy
+  has_many :message_logs, dependent: :delete_all
 
   enum :status, { stopped: 0, starting: 1, running: 2, stopping: 3, error: 4 }, default: :stopped
 
