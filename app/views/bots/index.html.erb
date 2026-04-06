@@ -1,24 +1,19 @@
 <%= turbo_stream_from "bots" %>
 
-<h1>Bots</h1>
-
-<p><%= link_to "New bot", new_bot_path %></p>
+<div class="mb-6 flex items-center justify-between">
+  <h1 class="text-xl font-semibold">Bots</h1>
+  <%= link_to "New bot", new_bot_path,
+    class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors" %>
+</div>
 
 <% if @bots.any? %>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Npub</th>
-        <th>Status</th>
-        <th>Commands</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <%= render @bots %>
-    </tbody>
-  </table>
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <%= render @bots %>
+  </div>
 <% else %>
-  <p>No bots yet.</p>
+  <div class="rounded-lg border border-border bg-surface-raised p-8 text-center">
+    <p class="text-text-muted mb-4">No bots yet. Create your first bot to get started.</p>
+    <%= link_to "Create a bot", new_bot_path,
+      class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors" %>
+  </div>
 <% end %>

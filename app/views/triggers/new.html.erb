@@ -1,5 +1,5 @@
-<h1>New trigger for <%= @bot.name %></h1>
+<h1 class="mb-6 text-xl font-semibold">New trigger for <%= @bot.name %></h1>
 
-<%= render "form", bot: @bot, trigger: @trigger %>
-
-<p><%= link_to "Back to bot", bot_path(@bot) %></p>
+<div class="max-w-lg rounded-lg border border-border bg-surface-raised p-6">
+  <%= render "form", bot: @bot, trigger: @trigger %>
+</div>

@@ -1,33 +1,36 @@
-<h1>Welcome to Botburrow</h1>
-<p>Create your admin account to get started.</p>
+<div class="rounded-lg border border-border bg-surface-raised p-6">
+  <p class="mb-6 text-sm text-text-muted">Create your admin account to get started.</p>
 
-<%= tag.div(flash[:alert], style: "color:red") if flash[:alert] %>
+  <% if @user.errors.any? %>
+    <div class="mb-4 rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+      <ul class="list-disc pl-4">
+        <% @user.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
 
-<% if @user.errors.any? %>
-  <div style="color:red">
-    <ul>
-      <% @user.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-    </ul>
-  </div>
-<% end %>
+  <%= form_with model: @user, url: setup_path, class: "space-y-4" do |form| %>
+    <div>
+      <%= form.label :email_address, "Email", class: "block text-sm font-medium text-text-muted mb-1" %>
+      <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username",
+        class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+    </div>
 
-<%= form_with model: @user, url: setup_path do |form| %>
-  <div>
-    <%= form.label :email_address %>
-    <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username" %>
-  </div>
+    <div>
+      <%= form.label :password, class: "block text-sm font-medium text-text-muted mb-1" %>
+      <%= form.password_field :password, required: true, autocomplete: "new-password", maxlength: 72,
+        class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+    </div>
 
-  <div>
-    <%= form.label :password %>
-    <%= form.password_field :password, required: true, autocomplete: "new-password", maxlength: 72 %>
-  </div>
+    <div>
+      <%= form.label :password_confirmation, "Confirm password", class: "block text-sm font-medium text-text-muted mb-1" %>
+      <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", maxlength: 72,
+        class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+    </div>
 
-  <div>
-    <%= form.label :password_confirmation %>
-    <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", maxlength: 72 %>
-  </div>
-
-  <%= form.submit "Create Account" %>
-<% end %>
+    <%= form.submit "Create Account",
+      class: "w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors cursor-pointer" %>
+  <% end %>
+</div>

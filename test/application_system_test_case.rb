@@ -6,9 +6,9 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   def sign_in
     user = users(:one)
     visit new_session_path
-    fill_in "Enter your email address", with: user.email_address
-    fill_in "Enter your password", with: "password"
+    fill_in "Email", with: user.email_address
+    fill_in "Password", with: "password"
     click_on "Sign in"
-    assert_text "Bots" # verify login succeeded
+    assert_selector "main" # verify login succeeded and redirected to dashboard
   end
 end

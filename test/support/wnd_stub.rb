@@ -24,10 +24,16 @@ class WndStubInstance
     @config[:responses][:accounts_list] || []
   end
 
-  def profile_update(account:, name: nil, display_name: nil, about: nil)
-    record_call(:profile_update, account: account, name: name, about: about)
+  def profile_update(account:, name: nil, display_name: nil, about: nil, picture: nil)
+    record_call(:profile_update, account: account, name: name, about: about, picture: picture)
     maybe_raise(:profile_update)
     "ok"
+  end
+
+  def profile_show(account:)
+    record_call(:profile_show, account: account)
+    maybe_raise(:profile_show)
+    @config[:responses][:profile_show] || { "name" => nil, "picture" => nil }
   end
 
   def daemon_status

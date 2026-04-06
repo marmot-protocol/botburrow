@@ -8,8 +8,10 @@ class BotsController < ApplicationController
   end
 
   def show
+    sync_profile_picture(@bot)
     @groups = fetch_bot_groups
     @invitations = fetch_bot_invitations unless @bot.auto_accept_invitations?
+    @logs = @bot.message_logs.recent.limit(100)
   end
 
   def new
@@ -21,7 +23,7 @@ class BotsController < ApplicationController
     result = wnd.create_identity
     npub = result["pubkey"]
     wnd.keys_publish(account: npub)
-    wnd.profile_update(account: npub, name: bot_params[:name], about: bot_params[:description])
+    wnd.profile_update(account: npub, name: bot_params[:name], about: bot_params[:description], picture: bot_params[:picture_url].presence)
 
     @bot = Bot.new(bot_params.merge(npub: npub))
 
@@ -41,7 +43,7 @@ class BotsController < ApplicationController
 
   def update
     if @bot.update(bot_params)
-      wnd_client.profile_update(account: @bot.npub, name: @bot.name, about: @bot.description)
+      wnd_client.profile_update(account: @bot.npub, name: @bot.name, about: @bot.description, picture: @bot.picture_url.presence)
       redirect_to @bot, notice: "Bot was successfully updated."
     else
       render :edit, status: :unprocessable_entity
@@ -92,7 +94,7 @@ class BotsController < ApplicationController
   end
 
   def bot_params
-    params.expect(bot: [ :name, :description, :auto_accept_invitations ])
+    params.expect(bot: [ :name, :description, :auto_accept_invitations, :picture_url ])
   end
 
   def wnd_client
@@ -135,5 +137,13 @@ class BotsController < ApplicationController
 
   def extract_group_id(mls_group_id)
     Wnd.extract_group_id(mls_group_id)
+  end
+
+  def sync_profile_picture(bot)
+    profile = wnd_client.profile_show(account: bot.npub)
+    picture = profile["picture"]&.to_s.presence
+    bot.update_column(:picture_url, picture) if bot.picture_url != picture
+  rescue Wnd::Error
+    # wnd unavailable — show what we have cached
   end
 end

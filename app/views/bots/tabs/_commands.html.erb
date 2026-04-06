@@ -1,0 +1,44 @@
+<div class="mb-4 flex items-center justify-between">
+  <h2 class="text-lg font-medium">Commands</h2>
+  <%= link_to "New command", new_bot_command_path(bot),
+    class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors" %>
+</div>
+
+<% if bot.commands.any? %>
+  <div class="rounded-lg border border-border bg-surface-raised overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-border text-left text-text-muted">
+          <th class="px-4 py-3 font-medium">Name</th>
+          <th class="px-4 py-3 font-medium">Pattern</th>
+          <th class="px-4 py-3 font-medium">Type</th>
+          <th class="px-4 py-3 font-medium">Enabled</th>
+          <th class="px-4 py-3 font-medium">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-border">
+        <% bot.commands.order(:name).each do |command| %>
+          <tr class="hover:bg-surface-overlay transition-colors">
+            <td class="px-4 py-3"><%= command.name %></td>
+            <td class="px-4 py-3 font-mono text-xs"><%= command.pattern %></td>
+            <td class="px-4 py-3 text-text-muted"><%= command.response_type.humanize %></td>
+            <td class="px-4 py-3">
+              <span class="<%= command.enabled? ? 'text-success' : 'text-text-faint' %>">
+                <%= command.enabled? ? "Yes" : "No" %>
+              </span>
+            </td>
+            <td class="flex gap-2 px-4 py-3">
+              <%= link_to "Edit", edit_bot_command_path(bot, command),
+                class: "text-xs text-primary hover:text-primary-hover" %>
+              <%= button_to "Delete", bot_command_path(bot, command), method: :delete,
+                data: { turbo_confirm: "Are you sure?" },
+                class: "text-xs text-danger hover:text-danger-hover" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p class="rounded-lg border border-border bg-surface-raised p-6 text-center text-sm text-text-faint">No commands yet.</p>
+<% end %>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+  <head>
+    <title><%= content_for(:title) || "Botburrow" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="flex min-h-full items-center justify-center bg-surface px-4 text-text">
+    <div class="w-full max-w-sm">
+      <div class="mb-8 text-center">
+        <h1 class="text-2xl font-bold text-text">Botburrow</h1>
+      </div>
+
+      <% if flash[:notice] %>
+        <div class="mb-4 rounded-md border border-success/30 bg-success/10 px-4 py-3 text-sm text-success" role="status">
+          <%= flash[:notice] %>
+        </div>
+      <% end %>
+      <% if flash[:alert] %>
+        <div class="mb-4 rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
+          <%= flash[:alert] %>
+        </div>
+      <% end %>
+
+      <%= yield %>
+    </div>
+  </body>
+</html>

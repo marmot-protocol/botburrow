@@ -1,14 +1,34 @@
-<tr id="<%= dom_id(bot) %>">
-  <td><%= link_to bot.name, bot_path(bot) %></td>
-  <td><code><%= truncate(bot.display_npub, length: 24) %></code></td>
-  <td><%= bot.status %></td>
-  <td><%= bot.commands.count %></td>
-  <td>
-    <% if bot.stopped? || bot.error? %>
-      <%= button_to "Start", start_bot_path(bot), method: :post %>
-    <% end %>
-    <% if bot.running? || bot.starting? %>
-      <%= button_to "Stop", stop_bot_path(bot), method: :post %>
-    <% end %>
-  </td>
-</tr>
+<div id="<%= dom_id(bot) %>" class="rounded-lg border border-border bg-surface-raised p-4">
+  <div class="mb-3 flex items-start gap-3">
+    <%= bot_avatar(bot) %>
+    <div class="flex-1">
+      <div class="flex items-start justify-between">
+        <%= link_to bot.name, bot_path(bot), class: "text-base font-medium text-text hover:text-primary transition-colors" %>
+        <span class="inline-flex items-center gap-1.5 text-xs font-medium <%= status_color(bot.status) %>">
+          <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+          <%= bot.status.capitalize %>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <p class="mb-3 font-mono text-xs text-text-faint"><%= truncate(bot.display_npub, length: 24) %></p>
+
+  <% if bot.description.present? %>
+    <p class="mb-3 text-sm text-text-muted"><%= truncate(bot.description, length: 80) %></p>
+  <% end %>
+
+  <div class="flex items-center justify-between">
+    <span class="text-xs text-text-faint"><%= pluralize(bot.commands.count, "command") %></span>
+    <div class="flex gap-2">
+      <% if bot.stopped? || bot.error? %>
+        <%= button_to "Start", start_bot_path(bot), method: :post,
+          class: "rounded px-3 py-1 text-xs font-medium text-success border border-success/30 hover:bg-success/10 transition-colors" %>
+      <% end %>
+      <% if bot.running? || bot.starting? %>
+        <%= button_to "Stop", stop_bot_path(bot), method: :post,
+          class: "rounded px-3 py-1 text-xs font-medium text-danger border border-danger/30 hover:bg-danger/10 transition-colors" %>
+      <% end %>
+    </div>
+  </div>
+</div>

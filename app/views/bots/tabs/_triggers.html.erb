@@ -1,10 +1,10 @@
-<div class="mb-6 flex items-center justify-between">
-  <h1 class="text-xl font-semibold">Triggers for <%= @bot.name %></h1>
-  <%= link_to "New trigger", new_bot_trigger_path(@bot),
+<div class="mb-4 flex items-center justify-between">
+  <h2 class="text-lg font-medium">Triggers</h2>
+  <%= link_to "New trigger", new_bot_trigger_path(bot),
     class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors" %>
 </div>
 
-<% if @triggers.any? %>
+<% if bot.triggers.any? %>
   <div class="rounded-lg border border-border bg-surface-raised overflow-hidden">
     <table class="w-full text-sm">
       <thead>
@@ -18,7 +18,7 @@
         </tr>
       </thead>
       <tbody class="divide-y divide-border">
-        <% @triggers.each do |trigger| %>
+        <% bot.triggers.order(:position).each do |trigger| %>
           <tr class="hover:bg-surface-overlay transition-colors">
             <td class="px-4 py-3"><%= trigger.name %></td>
             <td class="px-4 py-3 text-text-muted"><%= trigger.event_type.humanize %></td>
@@ -35,9 +35,11 @@
               </span>
             </td>
             <td class="flex gap-2 px-4 py-3">
-              <%= link_to "Edit", edit_bot_trigger_path(@bot, trigger), class: "text-xs text-primary hover:text-primary-hover" %>
-              <%= button_to "Delete", bot_trigger_path(@bot, trigger), method: :delete,
-                data: { turbo_confirm: "Are you sure?" }, class: "text-xs text-danger hover:text-danger-hover" %>
+              <%= link_to "Edit", edit_bot_trigger_path(bot, trigger),
+                class: "text-xs text-primary hover:text-primary-hover" %>
+              <%= button_to "Delete", bot_trigger_path(bot, trigger), method: :delete,
+                data: { turbo_confirm: "Are you sure?" },
+                class: "text-xs text-danger hover:text-danger-hover" %>
             </td>
           </tr>
         <% end %>
@@ -47,5 +49,3 @@
 <% else %>
   <p class="rounded-lg border border-border bg-surface-raised p-6 text-center text-sm text-text-faint">No triggers yet.</p>
 <% end %>
-
-<p class="mt-4"><%= link_to "Back to bot", bot_path(@bot), class: "text-sm text-primary hover:text-primary-hover" %></p>

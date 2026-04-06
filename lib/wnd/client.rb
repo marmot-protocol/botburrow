@@ -64,8 +64,12 @@ module Wnd
       request("send_message", account: account, group_id: group_id, message: message)
     end
 
-    def profile_update(account:, name: nil, display_name: nil, about: nil)
-      request("profile_update", account: account, name: name, display_name: display_name, about: about)
+    def profile_update(account:, name: nil, display_name: nil, about: nil, picture: nil)
+      request("profile_update", account: account, name: name, display_name: display_name, about: about, picture: picture)
+    end
+
+    def profile_show(account:)
+      request("profile_show", account: account)
     end
 
     def daemon_status

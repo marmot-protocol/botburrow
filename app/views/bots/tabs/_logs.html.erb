@@ -1,10 +1,10 @@
-<div class="mb-6">
-  <h1 class="text-xl font-semibold">Message Logs for <%= @bot.name %></h1>
+<div class="mb-4 flex items-center justify-between">
+  <h2 class="text-lg font-medium">Message Logs</h2>
 </div>
 
-<%= render "filter", bot: @bot %>
+<%= render "message_logs/filter", bot: bot %>
 
-<% if @logs.any? %>
+<% if logs.any? %>
   <div class="rounded-lg border border-border bg-surface-raised overflow-hidden">
     <table class="w-full text-sm">
       <thead>
@@ -17,7 +17,7 @@
         </tr>
       </thead>
       <tbody class="divide-y divide-border">
-        <% @logs.each do |log| %>
+        <% logs.each do |log| %>
           <tr class="hover:bg-surface-overlay transition-colors">
             <td class="px-4 py-3 text-text-muted"><%= log.message_at.to_fs(:short) %></td>
             <td class="px-4 py-3">
@@ -34,5 +34,3 @@
 <% else %>
   <p class="rounded-lg border border-border bg-surface-raised p-6 text-center text-sm text-text-faint">No message logs found.</p>
 <% end %>
-
-<p class="mt-4"><%= link_to "Back to bot", bot_path(@bot), class: "text-sm text-primary hover:text-primary-hover" %></p>

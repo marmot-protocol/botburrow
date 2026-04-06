@@ -1,7 +1,6 @@
 <% if trigger.errors.any? %>
-  <div>
-    <h2><%= pluralize(trigger.errors.count, "error") %> prohibited this trigger from being saved:</h2>
-    <ul>
+  <div class="mb-4 rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+    <ul class="list-disc pl-4">
       <% trigger.errors.full_messages.each do |message| %>
         <li><%= message %></li>
       <% end %>
@@ -9,44 +8,52 @@
   </div>
 <% end %>
 
-<%= form_with model: [bot, trigger] do |form| %>
+<%= form_with model: [bot, trigger], class: "space-y-4" do |form| %>
   <div>
-    <%= form.label :name %>
-    <%= form.text_field :name, required: true, placeholder: "Welcome message" %>
+    <%= form.label :name, class: "block text-sm font-medium text-text-muted mb-1" %>
+    <%= form.text_field :name, required: true, placeholder: "Welcome message",
+      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
   </div>
 
   <div>
-    <%= form.label :event_type %>
-    <%= form.select :event_type, Trigger.event_types.keys.map { |k| [k.humanize, k] } %>
+    <%= form.label :event_type, class: "block text-sm font-medium text-text-muted mb-1" %>
+    <%= form.select :event_type, Trigger.event_types.keys.map { |k| [k.humanize, k] },
+      {}, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
   </div>
 
   <div>
-    <%= form.label :condition_type %>
-    <%= form.select :condition_type, Trigger.condition_types.keys.map { |k| [k.humanize, k] } %>
+    <%= form.label :condition_type, class: "block text-sm font-medium text-text-muted mb-1" %>
+    <%= form.select :condition_type, Trigger.condition_types.keys.map { |k| [k.humanize, k] },
+      {}, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
   </div>
 
   <div>
-    <%= form.label :condition_value %>
-    <%= form.text_field :condition_value, placeholder: "hello" %>
-    <small>Leave blank for "any" condition type.</small>
+    <%= form.label :condition_value, class: "block text-sm font-medium text-text-muted mb-1" %>
+    <%= form.text_field :condition_value, placeholder: "hello",
+      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+    <p class="mt-1 text-xs text-text-faint">Leave blank for "any" condition type.</p>
   </div>
 
   <div>
-    <%= form.label :action_type %>
-    <%= form.select :action_type, Trigger.action_types.keys.map { |k| [k.humanize, k] } %>
+    <%= form.label :action_type, class: "block text-sm font-medium text-text-muted mb-1" %>
+    <%= form.select :action_type, Trigger.action_types.keys.map { |k| [k.humanize, k] },
+      {}, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
   </div>
 
   <div>
-    <%= form.label :action_config, "Action config (JSON)" %>
-    <%= form.text_area :action_config, rows: 3, placeholder: '{"response_text": "Hello!"}' %>
+    <%= form.label :action_config, "Action config (JSON)", class: "block text-sm font-medium text-text-muted mb-1" %>
+    <%= form.text_area :action_config, rows: 3, placeholder: '{"response_text": "Hello!"}',
+      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm font-mono text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
   </div>
 
-  <div>
-    <%= form.label :enabled %>
-    <%= form.check_box :enabled %>
+  <div class="flex items-center gap-2">
+    <%= form.check_box :enabled, class: "rounded border-border bg-surface text-primary focus:ring-primary" %>
+    <%= form.label :enabled, class: "text-sm text-text-muted" %>
   </div>
 
-  <div>
-    <%= form.submit %>
+  <div class="flex gap-3">
+    <%= form.submit class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors cursor-pointer" %>
+    <%= link_to "Cancel", bot_path(bot),
+      class: "rounded-md px-4 py-2 text-sm font-medium text-text-muted border border-border hover:bg-surface-overlay transition-colors" %>
   </div>
 <% end %>

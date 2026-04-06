@@ -32,15 +32,12 @@ class BotsControllerTest < ActionDispatch::IntegrationTest
     Bot.delete_all
     get bots_path
     assert_response :success
-    assert_select "p", "No bots yet."
+    assert_select "p", /No bots yet/
   end
 
   test "index lists bots with status" do
     get bots_path
     assert_response :success
-    assert_select "table" do
-      assert_select "tr", minimum: 2
-    end
     assert_select "a", "RelayBot"
     assert_select "a", "EchoBot"
   end
@@ -98,11 +95,9 @@ class BotsControllerTest < ActionDispatch::IntegrationTest
     get bot_path(@relay_bot)
     assert_response :success
     assert_select "h1", @relay_bot.name
-    assert_select "code", @relay_bot.display_npub
-    assert_select "table" do
-      assert_select "td", "Ping"
-      assert_select "td", "Help"
-    end
+    assert_match @relay_bot.display_npub, response.body
+    assert_select "td", "Ping"
+    assert_select "td", "Help"
   end
 
   test "show displays QR code for bot npub" do
@@ -199,7 +194,7 @@ class BotsControllerTest < ActionDispatch::IntegrationTest
   test "layout includes navigation with logout button" do
     get bots_path
     assert_select "nav" do
-      assert_select "a", "Botburrow"
+      assert_select "a", "Bots"
       assert_select "button", "Log out"
     end
   end
@@ -228,7 +223,7 @@ class BotsControllerTest < ActionDispatch::IntegrationTest
 
     get bot_path(@relay_bot)
     assert_response :success
-    assert_select "h2", "Groups"
+    assert_select "h3", "Groups"
     assert_select "td", "Test Group"
     assert_select "td", "active"
   end

@@ -1,7 +1,6 @@
 <% if scheduled_action.errors.any? %>
-  <div>
-    <h2><%= pluralize(scheduled_action.errors.count, "error") %> prohibited this scheduled action from being saved:</h2>
-    <ul>
+  <div class="mb-4 rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+    <ul class="list-disc pl-4">
       <% scheduled_action.errors.full_messages.each do |message| %>
         <li><%= message %></li>
       <% end %>
@@ -9,31 +8,36 @@
   </div>
 <% end %>
 
-<%= form_with model: [bot, scheduled_action] do |form| %>
+<%= form_with model: [bot, scheduled_action], class: "space-y-4" do |form| %>
   <div>
-    <%= form.label :name %>
-    <%= form.text_field :name, required: true, placeholder: "Morning greeting" %>
+    <%= form.label :name, class: "block text-sm font-medium text-text-muted mb-1" %>
+    <%= form.text_field :name, required: true, placeholder: "Morning greeting",
+      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
   </div>
 
   <div>
-    <%= form.label :schedule %>
-    <%= form.text_field :schedule, required: true, placeholder: "every 1h" %>
-    <small>Examples: every 30m, every 1h, every 1d</small>
+    <%= form.label :schedule, class: "block text-sm font-medium text-text-muted mb-1" %>
+    <%= form.text_field :schedule, required: true, placeholder: "every 1h",
+      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+    <p class="mt-1 text-xs text-text-faint">Examples: every 30m, every 1h, every 1d</p>
   </div>
 
   <%= form.hidden_field :action_type, value: "send_message" %>
 
   <div>
-    <%= form.label :action_config, "Action config (JSON)" %>
-    <%= form.text_area :action_config, required: true, rows: 3, placeholder: '{"group_id": "...", "message": "Good morning!"}' %>
+    <%= form.label :action_config, "Action config (JSON)", class: "block text-sm font-medium text-text-muted mb-1" %>
+    <%= form.text_area :action_config, required: true, rows: 3, placeholder: '{"group_id": "...", "message": "Good morning!"}',
+      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm font-mono text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
   </div>
 
-  <div>
-    <%= form.label :enabled %>
-    <%= form.check_box :enabled %>
+  <div class="flex items-center gap-2">
+    <%= form.check_box :enabled, class: "rounded border-border bg-surface text-primary focus:ring-primary" %>
+    <%= form.label :enabled, class: "text-sm text-text-muted" %>
   </div>
 
-  <div>
-    <%= form.submit %>
+  <div class="flex gap-3">
+    <%= form.submit class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors cursor-pointer" %>
+    <%= link_to "Cancel", bot_path(bot),
+      class: "rounded-md px-4 py-2 text-sm font-medium text-text-muted border border-border hover:bg-surface-overlay transition-colors" %>
   </div>
 <% end %>

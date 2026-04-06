@@ -1,0 +1,88 @@
+<div class="grid gap-6 lg:grid-cols-2">
+  <div class="rounded-lg border border-border bg-surface-raised p-4">
+    <h3 class="mb-3 text-sm font-medium text-text-muted">Details</h3>
+    <dl class="space-y-2 text-sm">
+      <div class="flex justify-between">
+        <dt class="text-text-muted">Status</dt>
+        <dd class="font-medium <%= status_color(bot.status) %>"><%= bot.status.capitalize %></dd>
+      </div>
+      <% if bot.error_message.present? %>
+        <div class="flex justify-between">
+          <dt class="text-text-muted">Error</dt>
+          <dd class="text-danger"><%= bot.error_message %></dd>
+        </div>
+      <% end %>
+      <div class="flex justify-between">
+        <dt class="text-text-muted">Auto-accept invitations</dt>
+        <dd><%= bot.auto_accept_invitations? ? "Yes" : "No" %></dd>
+      </div>
+      <div class="flex justify-between">
+        <dt class="text-text-muted">Created</dt>
+        <dd><%= bot.created_at.to_fs(:long) %></dd>
+      </div>
+    </dl>
+  </div>
+
+  <div class="rounded-lg border border-border bg-surface-raised p-4">
+    <h3 class="mb-3 text-sm font-medium text-text-muted">Identity</h3>
+    <p class="mb-3 break-all font-mono text-xs text-text"><%= bot.display_npub %></p>
+    <div class="inline-block w-[120px] rounded bg-white p-2">
+      <%= qr_code_svg(bot.display_npub) %>
+    </div>
+  </div>
+</div>
+
+<div class="mt-6 rounded-lg border border-border bg-surface-raised p-4">
+  <h3 class="mb-3 text-sm font-medium text-text-muted">Groups</h3>
+  <% if groups.any? %>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-border text-left text-text-muted">
+          <th class="pb-2 font-medium">Name</th>
+          <th class="pb-2 font-medium">Group ID</th>
+          <th class="pb-2 font-medium">State</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-border">
+        <% groups.each do |group| %>
+          <tr>
+            <td class="py-2"><%= group[:name] %></td>
+            <td class="py-2 font-mono text-xs text-text-faint"><%= truncate(group[:id], length: 20) %></td>
+            <td class="py-2"><%= group[:state] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="text-sm text-text-faint">Not a member of any groups yet.</p>
+  <% end %>
+</div>
+
+<% if invitations&.any? %>
+  <div class="mt-4 rounded-lg border border-border bg-surface-raised p-4">
+    <h3 class="mb-3 text-sm font-medium text-text-muted">Pending Invitations</h3>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-border text-left text-text-muted">
+          <th class="pb-2 font-medium">Name</th>
+          <th class="pb-2 font-medium">Group ID</th>
+          <th class="pb-2 font-medium">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-border">
+        <% invitations.each do |inv| %>
+          <tr>
+            <td class="py-2"><%= inv[:name] %></td>
+            <td class="py-2 font-mono text-xs text-text-faint"><%= truncate(inv[:id], length: 16) %></td>
+            <td class="flex gap-2 py-2">
+              <%= button_to "Accept", accept_invitation_bot_path(bot, group_id: inv[:id]), method: :post,
+                class: "rounded px-3 py-1 text-xs font-medium text-success border border-success/30 hover:bg-success/10" %>
+              <%= button_to "Decline", decline_invitation_bot_path(bot, group_id: inv[:id]), method: :post,
+                class: "rounded px-3 py-1 text-xs font-medium text-danger border border-danger/30 hover:bg-danger/10" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>

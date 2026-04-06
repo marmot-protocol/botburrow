@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="h-full">
   <head>
     <title><%= content_for(:title) || "Botburrow" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -11,8 +11,7 @@
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
@@ -23,31 +22,71 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <header>
-      <nav>
-        <%= link_to "Botburrow", root_path %>
-        <% if authenticated? %>
-          <%= button_to "Log out", session_path, method: :delete %>
+  <body class="h-full bg-surface text-text">
+    <div class="flex h-full" data-controller="sidebar">
+      <%# Mobile overlay %>
+      <div class="fixed inset-0 z-30 bg-black/50 hidden lg:hidden"
+           data-sidebar-target="overlay"
+           data-action="click->sidebar#close"></div>
+
+      <%# Sidebar %>
+      <aside class="fixed inset-y-0 left-0 z-40 hidden w-56 flex-col border-r border-border bg-surface-raised lg:flex"
+             data-sidebar-target="menu">
+        <nav class="flex flex-1 flex-col p-4">
+          <div class="mb-8">
+            <span class="text-lg font-semibold text-text">Botburrow</span>
+          </div>
+
+          <div class="flex flex-1 flex-col gap-1">
+            <%= link_to "Bots", root_path,
+              class: "rounded-md px-3 py-2 text-sm font-medium text-text-muted hover:bg-surface-overlay hover:text-text transition-colors" %>
+          </div>
+
+          <div class="border-t border-border pt-4">
+            <%= button_to "Log out", session_path, method: :delete,
+              class: "w-full rounded-md px-3 py-2 text-left text-sm font-medium text-text-muted hover:bg-surface-overlay hover:text-text transition-colors" %>
+          </div>
+        </nav>
+      </aside>
+
+      <%# Main content %>
+      <div class="flex flex-1 flex-col lg:pl-56">
+        <%# Top bar (mobile) %>
+        <header class="sticky top-0 z-20 flex items-center gap-4 border-b border-border bg-surface-raised px-4 py-3 lg:hidden">
+          <button data-action="sidebar#toggle" class="text-text-muted hover:text-text" aria-label="Toggle navigation">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+          </button>
+          <span class="text-sm font-semibold text-text">Botburrow</span>
+        </header>
+
+        <% if listener_stale? %>
+          <div class="border-b border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning" role="alert">
+            <strong>Warning:</strong> Message listener is not running. Bots will not respond.
+          </div>
         <% end %>
-      </nav>
-    </header>
 
-    <% if flash[:notice] %>
-      <div role="status"><%= flash[:notice] %></div>
-    <% end %>
-    <% if flash[:alert] %>
-      <div role="alert"><%= flash[:alert] %></div>
-    <% end %>
+        <%# Flash toasts %>
+        <% if flash[:notice] %>
+          <div class="m-4 flex items-center justify-between rounded-md border border-success/30 bg-success/10 px-4 py-3 text-sm text-success"
+               role="status" data-controller="toast">
+            <span><%= flash[:notice] %></span>
+            <button data-action="toast#dismiss" class="ml-4 text-success/60 hover:text-success" aria-label="Dismiss">&times;</button>
+          </div>
+        <% end %>
+        <% if flash[:alert] %>
+          <div class="m-4 flex items-center justify-between rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger"
+               role="alert" data-controller="toast">
+            <span><%= flash[:alert] %></span>
+            <button data-action="toast#dismiss" class="ml-4 text-danger/60 hover:text-danger" aria-label="Dismiss">&times;</button>
+          </div>
+        <% end %>
 
-    <% if authenticated? && listener_stale? %>
-      <div role="alert" style="background: #fef3cd; padding: 0.75rem; border-bottom: 1px solid #ffc107;">
-        <strong>Warning:</strong> Message listener is not running. Bots will not respond.
+        <main class="flex-1 p-6">
+          <%= yield %>
+        </main>
       </div>
-    <% end %>
-
-    <main>
-      <%= yield %>
-    </main>
+    </div>
   </body>
 </html>

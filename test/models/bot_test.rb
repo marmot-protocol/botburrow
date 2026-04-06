@@ -75,6 +75,12 @@ class BotTest < ActiveSupport::TestCase
       bot.update!(name: "RenamedBot")
     end
   end
+
+  test "bot can store a picture URL" do
+    bot = bots(:relay_bot)
+    bot.update!(picture_url: "https://example.com/avatar.jpg")
+    assert_equal "https://example.com/avatar.jpg", bot.reload.picture_url
+  end
 end
 
 # == Schema Information
@@ -87,6 +93,7 @@ end
 #  error_message           :text
 #  name                    :string           not null
 #  npub                    :string           not null
+#  picture_url             :string
 #  status                  :integer          default("stopped"), not null
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null

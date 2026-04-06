@@ -1,4 +1,5 @@
 class SetupController < ApplicationController
+  layout "auth"
   allow_unauthenticated_access
 
   before_action :require_no_users

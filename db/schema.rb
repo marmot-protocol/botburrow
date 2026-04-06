@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_04_014901) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_06_195743) do
   create_table "bots", force: :cascade do |t|
     t.boolean "auto_accept_invitations", default: true, null: false
     t.datetime "created_at", null: false
@@ -18,6 +18,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_04_014901) do
     t.text "error_message"
     t.string "name", null: false
     t.string "npub", null: false
+    t.string "picture_url"
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["npub"], name: "index_bots_on_npub", unique: true

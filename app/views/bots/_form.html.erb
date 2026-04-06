@@ -1,7 +1,6 @@
 <% if bot.errors.any? %>
-  <div>
-    <h2><%= pluralize(bot.errors.count, "error") %> prohibited this bot from being saved:</h2>
-    <ul>
+  <div class="mb-4 rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+    <ul class="list-disc pl-4">
       <% bot.errors.full_messages.each do |message| %>
         <li><%= message %></li>
       <% end %>
@@ -9,23 +8,35 @@
   </div>
 <% end %>
 
-<%= form_with model: bot do |form| %>
+<%= form_with model: bot, class: "space-y-4" do |form| %>
   <div>
-    <%= form.label :name %>
-    <%= form.text_field :name, required: true %>
+    <%= form.label :name, class: "block text-sm font-medium text-text-muted mb-1" %>
+    <%= form.text_field :name, required: true,
+      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
   </div>
 
   <div>
-    <%= form.label :description %>
-    <%= form.text_area :description, rows: 2, placeholder: "What does this bot do?" %>
+    <%= form.label :description, class: "block text-sm font-medium text-text-muted mb-1" %>
+    <%= form.text_area :description, rows: 2, placeholder: "What does this bot do?",
+      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
   </div>
 
   <div>
-    <%= form.label :auto_accept_invitations %>
-    <%= form.check_box :auto_accept_invitations %>
+    <%= form.label :picture_url, "Profile picture URL", class: "block text-sm font-medium text-text-muted mb-1" %>
+    <%= form.url_field :picture_url, placeholder: "https://example.com/avatar.jpg",
+      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+    <p class="mt-1 text-xs text-text-faint">URL to an image hosted online. Optional.</p>
   </div>
 
-  <div>
-    <%= form.submit data: { turbo_submits_with: "Saving..." } %>
+  <div class="flex items-center gap-2">
+    <%= form.check_box :auto_accept_invitations, class: "rounded border-border bg-surface text-primary focus:ring-primary" %>
+    <%= form.label :auto_accept_invitations, class: "text-sm text-text-muted" %>
+  </div>
+
+  <div class="flex gap-3">
+    <%= form.submit data: { turbo_submits_with: "Saving..." },
+      class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors cursor-pointer" %>
+    <%= link_to "Cancel", bot.persisted? ? bot_path(bot) : bots_path,
+      class: "rounded-md px-4 py-2 text-sm font-medium text-text-muted border border-border hover:bg-surface-overlay transition-colors" %>
   </div>
 <% end %>
