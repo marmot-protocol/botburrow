@@ -14,4 +14,10 @@ class ApplicationHelperTest < ActionView::TestCase
     Setting["listener.heartbeat"] = Time.current.iso8601
     assert_not listener_stale?
   end
+
+  test "qr_code_svg returns an inline SVG" do
+    svg = qr_code_svg("nostr:npub1test")
+    assert_includes svg, "<svg"
+    assert_includes svg, "</svg>"
+  end
 end

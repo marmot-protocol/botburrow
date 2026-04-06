@@ -36,6 +36,30 @@ class WndStubInstance
     @config[:responses][:daemon_status] || { "status" => "running" }
   end
 
+  def groups_list(account:)
+    record_call(:groups_list, account: account)
+    maybe_raise(:groups_list)
+    @config[:responses][:groups_list] || []
+  end
+
+  def groups_invites(account:)
+    record_call(:groups_invites, account: account)
+    maybe_raise(:groups_invites)
+    @config[:responses][:groups_invites] || []
+  end
+
+  def groups_accept(account:, group_id:)
+    record_call(:groups_accept, account: account, group_id: group_id)
+    maybe_raise(:groups_accept)
+    "ok"
+  end
+
+  def groups_decline(account:, group_id:)
+    record_call(:groups_decline, account: account, group_id: group_id)
+    maybe_raise(:groups_decline)
+    "ok"
+  end
+
   private
 
   def record_call(method, **args)

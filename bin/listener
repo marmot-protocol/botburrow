@@ -6,4 +6,8 @@ listener = BotListener.new
 trap("INT")  { listener.shutdown }
 trap("TERM") { listener.shutdown }
 
-listener.run
+begin
+  listener.run
+rescue BotListener::AlreadyRunningError => e
+  abort e.message
+end

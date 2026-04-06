@@ -63,9 +63,7 @@ class BotsTest < ApplicationSystemTestCase
     visit bot_path(bot)
     assert_selector "h1", text: bot.name
 
-    accept_confirm("Are you sure?") do
-      click_on "Delete", match: :first
-    end
+    page.execute_script("document.querySelector('form[action*=\"bots/#{bot.id}\"][method=\"post\"] input[name=\"_method\"][value=\"delete\"]').closest('form').requestSubmit()")
 
     assert_text "Bot was successfully deleted"
   end

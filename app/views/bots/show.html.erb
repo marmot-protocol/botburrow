@@ -2,7 +2,10 @@
 
 <dl>
   <dt>Npub</dt>
-  <dd><code><%= @bot.display_npub %></code></dd>
+  <dd>
+    <code><%= @bot.display_npub %></code>
+    <div style="width: 160px"><%= qr_code_svg(@bot.display_npub) %></div>
+  </dd>
 
   <% if @bot.description.present? %>
     <dt>Description</dt>
@@ -35,6 +38,56 @@
   <%= button_to "Delete", bot_path(@bot), method: :delete, data: { turbo_confirm: "Are you sure?" } %>
 </div>
 
+<h2>Groups</h2>
+
+<% if @groups.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Group ID</th>
+        <th>State</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @groups.each do |group| %>
+        <tr>
+          <td><%= group[:name] %></td>
+          <td><code><%= truncate(group[:id], length: 20) %></code></td>
+          <td><%= group[:state] %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>Not a member of any groups yet.</p>
+<% end %>
+
+<% if @invitations&.any? %>
+  <h3>Pending Invitations</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Group ID</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @invitations.each do |inv| %>
+        <tr>
+          <td><%= inv[:name] %></td>
+          <td><code><%= truncate(inv[:id], length: 16) %></code></td>
+          <td>
+            <%= button_to "Accept", accept_invitation_bot_path(@bot, group_id: inv[:id]), method: :post %>
+            <%= button_to "Decline", decline_invitation_bot_path(@bot, group_id: inv[:id]), method: :post %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
+
 <h2>Commands</h2>
 
 <% if @bot.commands.any? %>
@@ -43,16 +96,18 @@
       <tr>
         <th>Name</th>
         <th>Pattern</th>
+        <th>Type</th>
         <th>Response</th>
         <th>Enabled</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
-      <% @bot.commands.order(:position).each do |command| %>
+      <% @bot.commands.order(:name).each do |command| %>
         <tr>
           <td><%= command.name %></td>
           <td><code><%= command.pattern %></code></td>
+          <td><%= command.response_type.humanize %></td>
           <td><%= truncate(command.response_text, length: 50) %></td>
           <td><%= command.enabled? ? "Yes" : "No" %></td>
           <td>
@@ -68,4 +123,120 @@
 <% end %>
 
 <p><%= link_to "New command", new_bot_command_path(@bot) %></p>
+
+<h2>Triggers</h2>
+
+<% if @bot.triggers.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Event</th>
+        <th>Condition</th>
+        <th>Action</th>
+        <th>Enabled</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @bot.triggers.order(:position).each do |trigger| %>
+        <tr>
+          <td><%= trigger.name %></td>
+          <td><%= trigger.event_type.humanize %></td>
+          <td>
+            <%= trigger.condition_type.humanize %>
+            <% if trigger.condition_value.present? %>
+              (<code><%= trigger.condition_value %></code>)
+            <% end %>
+          </td>
+          <td><%= trigger.action_type.humanize %></td>
+          <td><%= trigger.enabled? ? "Yes" : "No" %></td>
+          <td>
+            <%= link_to "Edit", edit_bot_trigger_path(@bot, trigger) %>
+            <%= button_to "Delete", bot_trigger_path(@bot, trigger), method: :delete, data: { turbo_confirm: "Are you sure?" } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No triggers yet.</p>
+<% end %>
+
+<p><%= link_to "New trigger", new_bot_trigger_path(@bot) %></p>
+
+<h2>Scheduled Actions</h2>
+
+<% if @bot.scheduled_actions.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Schedule</th>
+        <th>Action</th>
+        <th>Enabled</th>
+        <th>Last run</th>
+        <th>Next run</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @bot.scheduled_actions.order(:name).each do |action| %>
+        <tr>
+          <td><%= action.name %></td>
+          <td><code><%= action.schedule %></code></td>
+          <td><%= action.action_type.humanize %></td>
+          <td><%= action.enabled? ? "Yes" : "No" %></td>
+          <td><%= action.last_run_at&.to_fs(:short) || "Never" %></td>
+          <td><%= action.next_run_at&.to_fs(:short) || "Not scheduled" %></td>
+          <td>
+            <%= link_to "Edit", edit_bot_scheduled_action_path(@bot, action) %>
+            <%= button_to "Delete", bot_scheduled_action_path(@bot, action), method: :delete, data: { turbo_confirm: "Are you sure?" } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No scheduled actions yet.</p>
+<% end %>
+
+<p><%= link_to "New scheduled action", new_bot_scheduled_action_path(@bot) %></p>
+
+<h2>Webhook Endpoints</h2>
+
+<% if @bot.webhook_endpoints.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>URL</th>
+        <th>Enabled</th>
+        <th>Deliveries</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @bot.webhook_endpoints.left_joins(:webhook_deliveries).group(:id).order(:name).select("webhook_endpoints.*, COUNT(webhook_deliveries.id) AS deliveries_count").each do |endpoint| %>
+        <tr>
+          <td><%= endpoint.name %></td>
+          <td><code><%= truncate(endpoint.url, length: 60) %></code></td>
+          <td><%= endpoint.enabled? ? "Yes" : "No" %></td>
+          <td><%= endpoint.deliveries_count %></td>
+          <td>
+            <%= link_to "Edit", edit_bot_webhook_endpoint_path(@bot, endpoint) %>
+            <%= button_to "Delete", bot_webhook_endpoint_path(@bot, endpoint), method: :delete, data: { turbo_confirm: "Are you sure?" } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No webhook endpoints yet.</p>
+<% end %>
+
+<p><%= link_to "New webhook endpoint", new_bot_webhook_endpoint_path(@bot) %></p>
+
+<p><%= link_to "View message logs", bot_message_logs_path(@bot) %></p>
+
 <p><%= link_to "Back to bots", bots_path %></p>

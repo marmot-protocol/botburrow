@@ -5,9 +5,15 @@ Rails.application.routes.draw do
 
   resources :bots do
     resources :commands, except: [ :show ]
+    resources :triggers, except: [ :show ]
+    resources :scheduled_actions, except: [ :show ]
+    resources :webhook_endpoints, except: [ :show ]
+    resources :message_logs, only: [ :index ], path: "logs"
     member do
       post :start
       post :stop
+      post :accept_invitation
+      post :decline_invitation
     end
   end
 

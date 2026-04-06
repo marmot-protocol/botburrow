@@ -1,3 +1,5 @@
+require "concurrent-ruby" unless defined?(Concurrent)
+
 class MockListenerWnd
   attr_reader :calls
 
@@ -31,6 +33,11 @@ class MockListenerWnd
     @calls << [ :send_message, { account: account, group_id: group_id, message: message } ]
   end
 
+  def groups_invites(account:)
+    @calls << [ :groups_invites, { account: account } ]
+    []
+  end
+
   def groups_accept(account:, group_id:)
     @calls << [ :groups_accept, { account: account, group_id: group_id } ]
   end
@@ -52,6 +59,3 @@ class MockListenerWnd
     @calls.select { |m, _| m == method }
   end
 end
-
-# Need concurrent-ruby for thread-safe collections
-require "concurrent-ruby" unless defined?(Concurrent)
