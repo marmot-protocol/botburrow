@@ -18,7 +18,7 @@ class CommandsControllerTest < ActionDispatch::IntegrationTest
 
   # -- New / Create --
 
-  test "new command form renders" do
+  test "new command form renders with response_type field" do
     get new_bot_command_path(@bot)
     assert_response :success
     assert_select "form" do
@@ -26,6 +26,7 @@ class CommandsControllerTest < ActionDispatch::IntegrationTest
       assert_select "input[name='command[pattern]']"
       assert_select "textarea[name='command[response_text]']"
       assert_select "input[name='command[enabled]']"
+      assert_select "select[name='command[response_type]']"
     end
   end
 
@@ -43,6 +44,23 @@ class CommandsControllerTest < ActionDispatch::IntegrationTest
     assert command.enabled?
     assert_equal @bot, command.bot
     assert_redirected_to bot_path(@bot)
+  end
+
+  test "creating a template command saves response_type" do
+    assert_difference "Command.count", 1 do
+      post bot_commands_path(@bot), params: {
+        command: {
+          name: "Greet",
+          pattern: "/greet",
+          response_text: "Hello {{author}}!",
+          response_type: "template",
+          enabled: "1"
+        }
+      }
+    end
+
+    command = Command.last
+    assert_equal "template", command.response_type
   end
 
   test "creating a command with invalid data re-renders form" do

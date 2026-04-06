@@ -2,37 +2,22 @@ ping:
   bot: relay_bot
   name: Ping
   pattern: /ping
-  pattern_type: 0
   response_text: pong!
-  position: 1
   enabled: true
 
 help:
   bot: relay_bot
   name: Help
   pattern: /help
-  pattern_type: 0
   response_text: "Available commands: /ping, /help"
-  position: 2
   enabled: true
 
 disabled_command:
   bot: relay_bot
   name: Secret
   pattern: /secret
-  pattern_type: 0
   response_text: "You found a secret!"
-  position: 3
   enabled: false
-
-exact_greeting:
-  bot: echo_bot
-  name: Greeting
-  pattern: hello
-  pattern_type: 1
-  response_text: "Hello there!"
-  position: 1
-  enabled: true
 
 # == Schema Information
 #
@@ -42,9 +27,8 @@ exact_greeting:
 #  enabled       :boolean          default(TRUE), not null
 #  name          :string           not null
 #  pattern       :string           not null
-#  pattern_type  :integer          default("prefix"), not null
-#  position      :integer
 #  response_text :text             not null
+#  response_type :integer          default("static"), not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  bot_id        :integer          not null

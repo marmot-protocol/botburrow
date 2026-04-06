@@ -22,6 +22,12 @@
   </div>
 
   <div>
+    <%= form.label :response_type %>
+    <%= form.select :response_type, Command.response_types.keys.map { |k| [k.humanize, k] }, {} %>
+    <small>Static: plain text. Template: use {{author}}, {{args}}, {{bot_name}}, {{timestamp}}. Webhook: URL to POST to.</small>
+  </div>
+
+  <div>
     <%= form.label :response_text %>
     <%= form.text_area :response_text, required: true, rows: 3, placeholder: "pong" %>
   </div>

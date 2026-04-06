@@ -4,9 +4,7 @@ class CreateCommands < ActiveRecord::Migration[8.1]
       t.references :bot, null: false, foreign_key: true
       t.string :name, null: false
       t.string :pattern, null: false
-      t.integer :pattern_type, null: false, default: 0
       t.text :response_text, null: false
-      t.integer :position
       t.boolean :enabled, null: false, default: true
       t.timestamps
     end

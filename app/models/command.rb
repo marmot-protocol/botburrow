@@ -1,7 +1,7 @@
 class Command < ApplicationRecord
   belongs_to :bot
 
-  enum :pattern_type, { prefix: 0, exact: 1 }, default: :prefix
+  enum :response_type, { static: 0, template: 1, webhook: 2 }, default: :static
 
   validates :name, presence: true
   validates :pattern, presence: true, uniqueness: { scope: :bot_id }
@@ -13,12 +13,21 @@ class Command < ApplicationRecord
   scope :enabled, -> { where(enabled: true) }
 
   def matches?(message_text)
-    normalized_message = message_text.strip.downcase
-    normalized_pattern = pattern.strip.downcase
+    message_text.strip.downcase.start_with?(pattern.strip.downcase)
+  end
 
-    case pattern_type
-    when "prefix" then normalized_message.start_with?(normalized_pattern)
-    when "exact"  then normalized_message == normalized_pattern
+  def extract_args(message_text)
+    return nil unless matches?(message_text)
+
+    message_text.strip[pattern.strip.length..].to_s.strip
+  end
+
+  def render_response(context = {})
+    return response_text if static?
+
+    response_text.gsub(/\{\{(\w+)\}\}/) do |match|
+      key = $1.to_sym
+      context.key?(key) ? context[key].to_s : match
     end
   end
 end
@@ -31,9 +40,8 @@ end
 #  enabled       :boolean          default(TRUE), not null
 #  name          :string           not null
 #  pattern       :string           not null
-#  pattern_type  :integer          default("prefix"), not null
-#  position      :integer
 #  response_text :text             not null
+#  response_type :integer          default("static"), not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  bot_id        :integer          not null
