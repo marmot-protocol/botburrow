@@ -1,0 +1,24 @@
+# Botburrow — self-hosted bot management for Marmot groups
+#
+# Quick start:
+#   docker compose up
+#
+# The storage volume persists SQLite databases, wnd (WhiteNoise daemon) state,
+# and the auto-generated SECRET_KEY_BASE. Back it up regularly.
+
+services:
+  botburrow:
+    build: .
+    image: botburrow:latest
+    ports:
+      - "3000:80"
+    volumes:
+      - botburrow_data:/rails/storage
+    # SECRET_KEY_BASE is auto-generated on first run and persisted in the volume.
+    # Set it explicitly here only if you need a specific value.
+    # environment:
+    #   - SECRET_KEY_BASE=<openssl rand -hex 64>
+    restart: unless-stopped
+
+volumes:
+  botburrow_data:

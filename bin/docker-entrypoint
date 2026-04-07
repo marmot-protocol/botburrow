@@ -1,8 +1,38 @@
 #!/bin/bash -e
 
+# Generate a persistent SECRET_KEY_BASE when none is provided.
+# The secret is stored in the storage volume so it survives restarts.
+if [ -z "$SECRET_KEY_BASE" ]; then
+  secret_file="/rails/storage/.secret_key_base"
+  if [ -f "$secret_file" ]; then
+    export SECRET_KEY_BASE=$(cat "$secret_file")
+  else
+    export SECRET_KEY_BASE=$(ruby -rsecurerandom -e 'print SecureRandom.hex(64)')
+    echo "$SECRET_KEY_BASE" > "$secret_file"
+    chmod 600 "$secret_file"
+  fi
+fi
+
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
+fi
+
+# Start wnd and listener when running the full stack (default CMD via thrust)
+if [ "${1}" = "./bin/thrust" ]; then
+  mkdir -p "${WND_DATA_DIR:-/rails/storage/wnd}"
+
+  wnd --data-dir "${WND_DATA_DIR:-/rails/storage/wnd}" &
+
+  # Wait for wnd socket before starting the listener
+  socket="${WND_SOCKET_PATH:-/rails/storage/wnd/release/wnd.sock}"
+  timeout=30
+  while [ ! -S "$socket" ] && [ $timeout -gt 0 ]; do
+    sleep 1
+    timeout=$((timeout - 1))
+  done
+
+  [ -S "$socket" ] && ./bin/listener &
 fi
 
 exec "${@}"
