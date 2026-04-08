@@ -108,62 +108,27 @@ class CommandTest < ActiveSupport::TestCase
 
   # -- Response types --
 
-  test "command defaults to static response_type" do
+  test "command defaults to script response_type" do
     command = Command.new(bot: bots(:relay_bot), name: "T", pattern: "/t", response_text: "test")
-    assert_equal "static", command.response_type
+    assert_equal "script", command.response_type
   end
 
-  test "command supports template response_type" do
-    command = Command.new(bot: bots(:relay_bot), name: "T", pattern: "/t", response_text: "test", response_type: :template)
-    assert command.template?
-  end
-
-  test "command supports webhook response_type" do
-    command = Command.new(bot: bots(:relay_bot), name: "T", pattern: "/t", response_text: "http://example.com/hook", response_type: :webhook)
-    assert command.webhook?
-  end
-
-  # -- Template rendering --
-
-  test "render_response returns response_text for static type" do
-    command = commands(:ping)
-    assert_equal "pong!", command.render_response({})
-  end
-
-  test "render_response interpolates template variables" do
+  test "command supports script response_type" do
     command = Command.new(
-      bot: bots(:relay_bot),
-      name: "Greet",
-      pattern: "/greet",
-      response_text: "Hello {{author}}, you said: {{args}}",
-      response_type: :template
+      bot: bots(:relay_bot), name: "Weather", pattern: "/weather",
+      response_text: '"Hello from script"', response_type: :script
     )
-    result = command.render_response(author: "alice", args: "world")
-    assert_equal "Hello alice, you said: world", result
+    assert command.valid?
+    assert command.script?
   end
 
-  test "render_response interpolates bot_name and timestamp" do
+  test "command with script type and invalid Ruby fails validation" do
     command = Command.new(
-      bot: bots(:relay_bot),
-      name: "Info",
-      pattern: "/info",
-      response_text: "Bot: {{bot_name}} at {{timestamp}}",
-      response_type: :template
+      bot: bots(:relay_bot), name: "Bad", pattern: "/bad",
+      response_text: "def foo(", response_type: :script
     )
-    now = "2026-04-03T12:00:00Z"
-    result = command.render_response(bot_name: "RelayBot", timestamp: now)
-    assert_equal "Bot: RelayBot at 2026-04-03T12:00:00Z", result
-  end
-
-  test "render_response leaves unknown variables as-is" do
-    command = Command.new(
-      bot: bots(:relay_bot),
-      name: "T",
-      pattern: "/t",
-      response_text: "Hello {{unknown}}",
-      response_type: :template
-    )
-    assert_equal "Hello {{unknown}}", command.render_response({})
+    assert_not command.valid?
+    assert command.errors[:response_text].any? { |e| e.include?("syntax error") }
   end
 end
 
@@ -176,7 +141,7 @@ end
 #  name          :string           not null
 #  pattern       :string           not null
 #  response_text :text             not null
-#  response_type :integer          default("static"), not null
+#  response_type :integer          default("script"), not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  bot_id        :integer          not null

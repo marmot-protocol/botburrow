@@ -8,41 +8,38 @@
   </div>
 <% end %>
 
-<%= form_with model: [bot, command], class: "space-y-4" do |form| %>
-  <div>
-    <%= form.label :name, class: "block text-sm font-medium text-text-muted mb-1" %>
-    <%= form.text_field :name, required: true, placeholder: "ping",
-      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
-  </div>
+<%= form_with model: [bot, command] do |form| %>
+  <div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-6">
+    <%# Left column: form fields %>
+    <div class="space-y-4">
+      <div>
+        <%= form.label :name, class: "block text-sm font-medium text-text-muted mb-1" %>
+        <%= form.text_field :name, required: true, placeholder: "ping",
+          class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+      </div>
 
-  <div>
-    <%= form.label :pattern, class: "block text-sm font-medium text-text-muted mb-1" %>
-    <%= form.text_field :pattern, required: true, placeholder: "/ping",
-      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
-    <p class="mt-1 text-xs text-text-faint">The text pattern to match against incoming messages.</p>
-  </div>
+      <div>
+        <%= form.label :pattern, class: "block text-sm font-medium text-text-muted mb-1" %>
+        <%= form.text_field :pattern, required: true, placeholder: "/ping",
+          class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+        <p class="mt-1 text-xs text-text-faint">The text pattern to match against incoming messages.</p>
+      </div>
 
-  <div>
-    <%= form.label :response_type, class: "block text-sm font-medium text-text-muted mb-1" %>
-    <%= form.select :response_type, Command.response_types.keys.map { |k| [k.humanize, k] }, {},
-      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
-    <p class="mt-1 text-xs text-text-faint">Static: plain text. Template: use &#123;&#123;author&#125;&#125;, &#123;&#123;args&#125;&#125;, &#123;&#123;bot_name&#125;&#125;, &#123;&#123;timestamp&#125;&#125;. Webhook: URL to POST to.</p>
-  </div>
+      <div class="flex items-center gap-2">
+        <%= form.check_box :enabled, class: "rounded border-border bg-surface text-primary focus:ring-primary" %>
+        <%= form.label :enabled, class: "text-sm text-text-muted" %>
+      </div>
 
-  <div>
-    <%= form.label :response_text, class: "block text-sm font-medium text-text-muted mb-1" %>
-    <%= form.text_area :response_text, required: true, rows: 3, placeholder: "pong",
-      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
-  </div>
+      <div class="flex gap-3">
+        <%= form.submit class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors cursor-pointer" %>
+        <%= link_to "Cancel", bot_path(bot),
+          class: "rounded-md px-4 py-2 text-sm font-medium text-text-muted border border-border hover:bg-surface-overlay transition-colors" %>
+      </div>
+    </div>
 
-  <div class="flex items-center gap-2">
-    <%= form.check_box :enabled, class: "rounded border-border bg-surface text-primary focus:ring-primary" %>
-    <%= form.label :enabled, class: "text-sm text-text-muted" %>
-  </div>
-
-  <div class="flex gap-3">
-    <%= form.submit class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors cursor-pointer" %>
-    <%= link_to "Cancel", bot_path(bot),
-      class: "rounded-md px-4 py-2 text-sm font-medium text-text-muted border border-border hover:bg-surface-overlay transition-colors" %>
+    <%# Right column: script editor %>
+    <div>
+      <%= render "shared/script_editor", form: form, field_name: :response_text %>
+    </div>
   </div>
 <% end %>

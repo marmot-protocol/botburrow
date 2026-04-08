@@ -1,5 +1,4 @@
 require "test_helper"
-require "webmock/minitest"
 require_relative "../support/mock_listener_wnd"
 
 class MockWndFactory
@@ -121,7 +120,7 @@ class BotListenerTest < ActiveSupport::TestCase
     npub = SecureRandom.hex(32)
     group_id = "testgroup123"
     bot = Bot.create!(name: "MsgBot", npub: npub, status: :stopped)
-    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: true)
+    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
     @wnd.add_group(npub, group_id)
 
     listener_thread = Thread.new { @listener.run }
@@ -151,7 +150,7 @@ class BotListenerTest < ActiveSupport::TestCase
     npub = SecureRandom.hex(32)
     group_id = "echogroup"
     bot = Bot.create!(name: "EchoBot", npub: npub, status: :stopped)
-    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: true)
+    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
     @wnd.add_group(npub, group_id)
 
     listener_thread = Thread.new { @listener.run }
@@ -176,7 +175,7 @@ class BotListenerTest < ActiveSupport::TestCase
     npub = SecureRandom.hex(32)
     group_id = "historygroup"
     bot = Bot.create!(name: "HistBot", npub: npub, status: :stopped)
-    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: true)
+    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
     @wnd.add_group(npub, group_id)
 
     listener_thread = Thread.new { @listener.run }
@@ -202,7 +201,7 @@ class BotListenerTest < ActiveSupport::TestCase
     npub = SecureRandom.hex(32)
     group_id = "triggergroup1"
     bot = Bot.create!(name: "TrigBot", npub: npub, status: :stopped)
-    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: true)
+    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
     bot.triggers.create!(
       name: "Hello trigger",
       event_type: :message_received,
@@ -360,8 +359,8 @@ class BotListenerTest < ActiveSupport::TestCase
     npub = SecureRandom.hex(32)
     group_id = "helpgroup"
     bot = Bot.create!(name: "HelpBot", npub: npub, status: :stopped)
-    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: true)
-    bot.commands.create!(name: "Secret", pattern: "/secret", response_text: "hidden", enabled: false)
+    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
+    bot.commands.create!(name: "Secret", pattern: "/secret", response_text: '"hidden"', enabled: false)
     @wnd.add_group(npub, group_id)
 
     listener_thread = Thread.new { @listener.run }
@@ -391,7 +390,7 @@ class BotListenerTest < ActiveSupport::TestCase
     npub = SecureRandom.hex(32)
     group_id = "statusgroup"
     bot = Bot.create!(name: "StatusBot", npub: npub, status: :stopped)
-    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: true)
+    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
     @wnd.add_group(npub, group_id)
 
     listener_thread = Thread.new { @listener.run }
@@ -416,90 +415,6 @@ class BotListenerTest < ActiveSupport::TestCase
     assert_includes args[:message], "1"  # 1 enabled command
   end
 
-  # -- Template response type --
-
-  test "dispatches template response with variable interpolation" do
-    npub = SecureRandom.hex(32)
-    group_id = "templategroup"
-    bot = Bot.create!(name: "TplBot", npub: npub, status: :stopped)
-    bot.commands.create!(
-      name: "Greet",
-      pattern: "/greet",
-      response_text: "Hello {{author}}, you said: {{args}}. I am {{bot_name}}.",
-      response_type: :template,
-      enabled: true
-    )
-    @wnd.add_group(npub, group_id)
-
-    listener_thread = Thread.new { @listener.run }
-    sleep 0.1
-    bot.update!(status: :starting)
-    sleep 0.3
-
-    @wnd.emit_event(npub, group_id, {
-      "trigger" => "NewMessage",
-      "message" => { "content" => "/greet world", "author" => "alice123" }
-    })
-    sleep 0.3
-
-    @listener.shutdown
-    @wnd.disconnect_all
-    listener_thread.join(2)
-
-    send_calls = @wnd.calls_for(:send_message)
-    assert_equal 1, send_calls.size
-    _, args = send_calls.first
-    assert_includes args[:message], "Hello alice123"
-    assert_includes args[:message], "you said: world"
-    assert_includes args[:message], "I am TplBot"
-  end
-
-  # -- Webhook response type --
-
-  test "webhook command dispatches to webhook and sends response" do
-    npub = SecureRandom.hex(32)
-    group_id = "webhookgroup"
-    bot = Bot.create!(name: "HookBot", npub: npub, status: :stopped)
-    endpoint = bot.webhook_endpoints.create!(name: "CMD Hook", url: "https://example.com/hook", enabled: true)
-    bot.commands.create!(
-      name: "Ask",
-      pattern: "/ask",
-      response_text: endpoint.url,
-      response_type: :webhook,
-      enabled: true
-    )
-    @wnd.add_group(npub, group_id)
-
-    # Stub the HTTP call
-    stub_request(:post, "https://example.com/hook")
-      .to_return(status: 200, body: "Webhook says hello!")
-
-    listener_thread = Thread.new { @listener.run }
-    sleep 0.1
-    bot.update!(status: :starting)
-    sleep 0.3
-
-    @wnd.emit_event(npub, group_id, {
-      "trigger" => "NewMessage",
-      "message" => { "content" => "/ask something", "author" => "alice" }
-    })
-    sleep 0.5
-
-    @listener.shutdown
-    @wnd.disconnect_all
-    listener_thread.join(2)
-
-    send_calls = @wnd.calls_for(:send_message)
-    assert_equal 1, send_calls.size
-    _, args = send_calls.first
-    assert_equal "Webhook says hello!", args[:message]
-
-    # Verify delivery was logged
-    assert_equal 1, WebhookDelivery.count
-    delivery = WebhookDelivery.last
-    assert delivery.success?
-  end
-
   test "records heartbeat while running" do
     run_listener_briefly(duration: 0.2)
 
@@ -514,7 +429,7 @@ class BotListenerTest < ActiveSupport::TestCase
     npub = SecureRandom.hex(32)
     group_id = "loggroup1"
     bot = Bot.create!(name: "LogBot", npub: npub, status: :stopped)
-    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: true)
+    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
     @wnd.add_group(npub, group_id)
 
     listener_thread = Thread.new { @listener.run }
@@ -545,7 +460,7 @@ class BotListenerTest < ActiveSupport::TestCase
     npub = SecureRandom.hex(32)
     group_id = "loggroup2"
     bot = Bot.create!(name: "LogBot2", npub: npub, status: :stopped)
-    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: true)
+    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
     @wnd.add_group(npub, group_id)
 
     listener_thread = Thread.new { @listener.run }
@@ -649,7 +564,7 @@ class BotListenerTest < ActiveSupport::TestCase
     sleep 0.3
 
     # Add a command AFTER the stream is already running
-    bot.commands.create!(name: "Late", pattern: "/late", response_text: "I was added late!", enabled: true)
+    bot.commands.create!(name: "Late", pattern: "/late", response_text: '"I was added late!"', enabled: true)
 
     @wnd.emit_event(npub, group_id, {
       "trigger" => "NewMessage",
@@ -671,7 +586,7 @@ class BotListenerTest < ActiveSupport::TestCase
     npub = SecureRandom.hex(32)
     group_id = "echoback1"
     bot = Bot.create!(name: "EchoBackBot", npub: npub, status: :stopped)
-    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: true)
+    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
     @wnd.add_group(npub, group_id)
 
     # Make send_message echo the bot's reply back onto the stream,

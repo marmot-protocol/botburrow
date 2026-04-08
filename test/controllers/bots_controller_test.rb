@@ -25,7 +25,6 @@ class BotsControllerTest < ActionDispatch::IntegrationTest
   # -- Index --
 
   test "index renders empty state when no bots" do
-    WebhookEndpoint.delete_all
     ScheduledAction.delete_all
     Trigger.delete_all
     Command.delete_all

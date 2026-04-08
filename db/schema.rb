@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_06_195743) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_07_230446) do
   create_table "bots", force: :cascade do |t|
     t.boolean "auto_accept_invitations", default: true, null: false
     t.datetime "created_at", null: false
@@ -19,6 +19,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_195743) do
     t.string "name", null: false
     t.string "npub", null: false
     t.string "picture_url"
+    t.text "script_data", default: "{}", null: false
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.index ["npub"], name: "index_bots_on_npub", unique: true
@@ -31,7 +32,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_195743) do
     t.string "name", null: false
     t.string "pattern", null: false
     t.text "response_text", null: false
-    t.integer "response_type", default: 0, null: false
+    t.integer "response_type", default: 3, null: false
     t.datetime "updated_at", null: false
     t.index ["bot_id", "pattern"], name: "index_commands_on_bot_id_and_pattern", unique: true
     t.index ["bot_id"], name: "index_commands_on_bot_id"
@@ -61,6 +62,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_195743) do
     t.string "name", null: false
     t.datetime "next_run_at"
     t.string "schedule", null: false
+    t.text "script_body"
     t.datetime "updated_at", null: false
     t.index ["bot_id"], name: "index_scheduled_actions_on_bot_id"
   end
@@ -93,6 +95,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_195743) do
     t.integer "event_type", default: 0, null: false
     t.string "name", null: false
     t.integer "position"
+    t.text "script_body"
     t.datetime "updated_at", null: false
     t.index ["bot_id"], name: "index_triggers_on_bot_id"
   end
@@ -105,35 +108,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_195743) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
-  create_table "webhook_deliveries", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "delivered_at"
-    t.string "event_type", null: false
-    t.text "request_body"
-    t.text "response_body"
-    t.integer "response_status"
-    t.boolean "success", default: false, null: false
-    t.datetime "updated_at", null: false
-    t.integer "webhook_endpoint_id", null: false
-    t.index ["webhook_endpoint_id"], name: "index_webhook_deliveries_on_webhook_endpoint_id"
-  end
-
-  create_table "webhook_endpoints", force: :cascade do |t|
-    t.integer "bot_id", null: false
-    t.datetime "created_at", null: false
-    t.boolean "enabled", default: true, null: false
-    t.string "name", null: false
-    t.string "secret"
-    t.datetime "updated_at", null: false
-    t.string "url", null: false
-    t.index ["bot_id"], name: "index_webhook_endpoints_on_bot_id"
-  end
-
   add_foreign_key "commands", "bots"
   add_foreign_key "message_logs", "bots"
   add_foreign_key "scheduled_actions", "bots"
   add_foreign_key "sessions", "users"
   add_foreign_key "triggers", "bots"
-  add_foreign_key "webhook_deliveries", "webhook_endpoints"
-  add_foreign_key "webhook_endpoints", "bots"
 end

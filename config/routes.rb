@@ -7,7 +7,6 @@ Rails.application.routes.draw do
     resources :commands, except: [ :show ]
     resources :triggers, except: [ :show ]
     resources :scheduled_actions, except: [ :show ]
-    resources :webhook_endpoints, except: [ :show ]
     resources :message_logs, only: [ :index ], path: "logs"
     member do
       post :start

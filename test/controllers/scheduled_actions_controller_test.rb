@@ -72,6 +72,68 @@ class ScheduledActionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  # -- Script scheduled actions --
+
+  test "creating a script scheduled action saves action_type and script_body" do
+    assert_difference "ScheduledAction.count", 1 do
+      post bot_scheduled_actions_path(@bot), params: {
+        scheduled_action: {
+          name: "Scripted greeting",
+          schedule: "every 1h",
+          action_type: "script",
+          action_config: '{"group_id": "g1"}',
+          script_body: '"Good morning!"',
+          enabled: "1"
+        }
+      }
+    end
+
+    action = ScheduledAction.last
+    assert_equal "Scripted greeting", action.name
+    assert_equal "script", action.action_type
+    assert_equal '"Good morning!"', action.script_body
+    assert_not_nil action.next_run_at
+    assert_redirected_to bot_path(@bot)
+  end
+
+  test "script scheduled action does not require message in action_config" do
+    assert_difference "ScheduledAction.count", 1 do
+      post bot_scheduled_actions_path(@bot), params: {
+        scheduled_action: {
+          name: "Script only group",
+          schedule: "every 1h",
+          action_type: "script",
+          action_config: '{"group_id": "g1"}',
+          script_body: '"Hello from script"',
+          enabled: "1"
+        }
+      }
+    end
+
+    action = ScheduledAction.last
+    config = action.parsed_action_config
+    assert_equal "g1", config["group_id"]
+    assert_nil config["message"]
+    assert_redirected_to bot_path(@bot)
+  end
+
+  test "creating a script scheduled action with invalid Ruby re-renders form" do
+    assert_no_difference "ScheduledAction.count" do
+      post bot_scheduled_actions_path(@bot), params: {
+        scheduled_action: {
+          name: "Bad script action",
+          schedule: "every 1h",
+          action_type: "script",
+          action_config: '{"group_id": "g1"}',
+          script_body: "def foo(",
+          enabled: "1"
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
   # -- Edit / Update --
 
   test "edit form renders with current values" do

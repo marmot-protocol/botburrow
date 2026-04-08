@@ -10,7 +10,7 @@ class BotListenerE2eTest < E2eTestCase
 
     # Create bot in Rails as stopped
     bot = Bot.create!(name: "E2E PingBot", npub: bot_pubkey, status: :stopped)
-    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong", enabled: true)
+    bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong"', enabled: true)
 
     # Start listener first (it will reconcile, find no starting bots)
     listener = BotListener.new(sync_interval: 1)
@@ -40,6 +40,55 @@ class BotListenerE2eTest < E2eTestCase
     assert_equal "/ping", incoming.content
     assert outgoing, "Expected outgoing pong message log. Logs: #{bot.message_logs.pluck(:direction, :content).inspect}"
     assert_equal "pong", outgoing.content
+  ensure
+    listener&.shutdown
+    listener_thread&.kill
+    bot&.destroy
+  end
+
+  test "bot responds to a script command via listener" do
+    user = create_test_account(name: "e2e-script-user")
+    bot_pubkey = create_test_account(name: "e2e-scriptbot")
+
+    group_id = create_test_group(creator: user, members: [ bot_pubkey ], name: "script-test")
+    skip "Could not create group" unless group_id
+
+    # Create bot with a script command
+    bot = Bot.create!(name: "E2E ScriptBot", npub: bot_pubkey, status: :stopped)
+    bot.commands.create!(
+      name: "Coin Flip",
+      pattern: "/flip",
+      response_text: "%w[Heads Tails].sample",
+      response_type: :script,
+      enabled: true
+    )
+
+    # Start listener
+    listener = BotListener.new(sync_interval: 1)
+    listener_thread = Thread.new { listener.run }
+    sleep 2
+
+    bot.update!(status: :starting)
+    sleep 5
+
+    bot.reload
+    assert_equal "running", bot.status, "Bot should be running, got: #{bot.status} (error: #{bot.error_message})"
+
+    # Send /flip from user account
+    @wnd.send_message(account: user, group_id: group_id, message: "/flip")
+    sleep 8
+
+    bot.reload
+    incoming = bot.message_logs.incoming.where(group_id: group_id).last
+    outgoing = bot.message_logs.outgoing.where(group_id: group_id).last
+
+    listener.shutdown
+    listener_thread.join(5)
+
+    assert incoming, "Expected incoming /flip message log. Logs: #{bot.message_logs.pluck(:direction, :content).inspect}"
+    assert_equal "/flip", incoming.content
+    assert outgoing, "Expected outgoing script response. Logs: #{bot.message_logs.pluck(:direction, :content).inspect}"
+    assert_includes %w[Heads Tails], outgoing.content
   ensure
     listener&.shutdown
     listener_thread&.kill

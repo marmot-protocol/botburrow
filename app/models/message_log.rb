@@ -5,6 +5,7 @@ class MessageLog < ApplicationRecord
 
   scope :incoming, -> { where(direction: "incoming") }
   scope :outgoing, -> { where(direction: "outgoing") }
+  scope :errors, -> { where(direction: "error") }
   scope :recent, -> { order(message_at: :desc) }
 end
 

@@ -1,0 +1,20 @@
+<div id="<%= dom_id(bot, :status) %>" class="flex flex-wrap items-center gap-2">
+  <span class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium <%= status_color(bot.status) %> border-current/20">
+    <span class="h-1.5 w-1.5 rounded-full bg-current <%= 'animate-pulse' if bot.starting? || bot.stopping? %>"></span>
+    <%= bot.status.capitalize %>
+  </span>
+
+  <% if bot.stopped? || bot.error? %>
+    <%= button_to "Start", start_bot_path(bot), method: :post,
+      class: "rounded-md px-4 py-2 text-sm font-medium text-success border border-success/30 hover:bg-success/10 transition-colors" %>
+  <% end %>
+  <% if bot.running? || bot.starting? %>
+    <%= button_to "Stop", stop_bot_path(bot), method: :post,
+      class: "rounded-md px-4 py-2 text-sm font-medium text-danger border border-danger/30 hover:bg-danger/10 transition-colors" %>
+  <% end %>
+  <%= link_to "Edit", edit_bot_path(bot),
+    class: "rounded-md px-4 py-2 text-sm font-medium text-text-muted border border-border hover:bg-surface-overlay transition-colors" %>
+  <%= button_to "Delete", bot_path(bot), method: :delete,
+    data: { turbo_confirm: "Are you sure?" },
+    class: "rounded-md px-4 py-2 text-sm font-medium text-danger border border-danger/30 hover:bg-danger/10 transition-colors" %>
+</div>

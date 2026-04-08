@@ -1,8 +1,9 @@
 class Bot < ApplicationRecord
+  include ActionView::RecordIdentifier
+
   has_many :commands, dependent: :destroy
   has_many :triggers, dependent: :destroy
   has_many :scheduled_actions, dependent: :destroy
-  has_many :webhook_endpoints, dependent: :destroy
   has_many :message_logs, dependent: :delete_all
 
   enum :status, { stopped: 0, starting: 1, running: 2, stopping: 3, error: 4 }, default: :stopped
@@ -12,12 +13,25 @@ class Bot < ApplicationRecord
 
   normalizes :name, with: -> { _1.strip }
 
-  after_update_commit -> { broadcast_replace_to "bots" rescue nil }, if: :saved_change_to_status?
+  after_update_commit :broadcast_status_change, if: :saved_change_to_status?
 
   def display_npub
     Wnd::Nostr.to_npub(npub)
   rescue
     npub
+  end
+
+  private
+
+  def broadcast_status_change
+    broadcast_replace_to "bots"
+
+    broadcast_replace_to self, target: dom_id(self, :status),
+      partial: "bots/status_bar", locals: { bot: self }
+    broadcast_replace_to self, target: dom_id(self, :status_detail),
+      partial: "bots/status_detail", locals: { bot: self }
+  rescue => e
+    Rails.logger.warn("[Bot] Broadcast failed: #{e.message}")
   end
 end
 
@@ -32,6 +46,7 @@ end
 #  name                    :string           not null
 #  npub                    :string           not null
 #  picture_url             :string
+#  script_data             :text             default("{}"), not null
 #  status                  :integer          default("stopped"), not null
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null

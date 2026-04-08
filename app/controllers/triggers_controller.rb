@@ -48,6 +48,6 @@ class TriggersController < ApplicationController
 
   def trigger_params
     params.expect(trigger: [ :name, :event_type, :condition_type, :condition_value,
-                             :action_type, :action_config, :position, :enabled ])
+                             :action_type, :action_config, :script_body, :position, :enabled ])
   end
 end

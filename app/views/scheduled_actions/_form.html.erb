@@ -8,36 +8,60 @@
   </div>
 <% end %>
 
-<%= form_with model: [bot, scheduled_action], class: "space-y-4" do |form| %>
-  <div>
-    <%= form.label :name, class: "block text-sm font-medium text-text-muted mb-1" %>
-    <%= form.text_field :name, required: true, placeholder: "Morning greeting",
-      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
-  </div>
+<%= form_with model: [bot, scheduled_action], data: { controller: "response-type" } do |form| %>
+  <div class="<%= 'grid lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-6' if scheduled_action.script? %>">
+    <%# Left column: form fields %>
+    <div class="space-y-4" data-response-type-target="formPanel">
+      <div>
+        <%= form.label :name, class: "block text-sm font-medium text-text-muted mb-1" %>
+        <%= form.text_field :name, required: true, placeholder: "Morning greeting",
+          class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+      </div>
 
-  <div>
-    <%= form.label :schedule, class: "block text-sm font-medium text-text-muted mb-1" %>
-    <%= form.text_field :schedule, required: true, placeholder: "every 1h",
-      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
-    <p class="mt-1 text-xs text-text-faint">Examples: every 30m, every 1h, every 1d</p>
-  </div>
+      <div>
+        <%= form.label :schedule, class: "block text-sm font-medium text-text-muted mb-1" %>
+        <%= form.text_field :schedule, required: true, placeholder: "every 1h",
+          class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+        <p class="mt-1 text-xs text-text-faint">Examples: every 30m, every 1h, every 1d</p>
+      </div>
 
-  <%= form.hidden_field :action_type, value: "send_message" %>
+      <div>
+        <%= form.label :action_type, class: "block text-sm font-medium text-text-muted mb-1" %>
+        <%= form.select :action_type, ScheduledAction.action_types.keys.map { |k| [k.humanize, k] },
+          {}, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary",
+          data: { response_type_target: "select", action: "response-type#toggle" } %>
+      </div>
 
-  <div>
-    <%= form.label :action_config, "Action config (JSON)", class: "block text-sm font-medium text-text-muted mb-1" %>
-    <%= form.text_area :action_config, required: true, rows: 3, placeholder: '{"group_id": "...", "message": "Good morning!"}',
-      class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm font-mono text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
-  </div>
+      <div data-response-type-target="standardField" class="<%= 'hidden' if scheduled_action.script? %>">
+        <%= form.label :action_config, "Action config (JSON)", class: "block text-sm font-medium text-text-muted mb-1" %>
+        <%= form.text_area :action_config, required: !scheduled_action.script?, rows: 3, placeholder: '{"group_id": "...", "message": "Good morning!"}',
+          class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm font-mono text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+      </div>
 
-  <div class="flex items-center gap-2">
-    <%= form.check_box :enabled, class: "rounded border-border bg-surface text-primary focus:ring-primary" %>
-    <%= form.label :enabled, class: "text-sm text-text-muted" %>
-  </div>
+      <div data-response-type-target="scriptField" class="<%= 'hidden' unless scheduled_action.script? %>">
+        <div>
+          <%= form.label :action_config, "Action config (JSON)", class: "block text-sm font-medium text-text-muted mb-1" %>
+          <%= form.text_area :action_config, rows: 2, placeholder: '{"group_id": "..."}',
+            class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm font-mono text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+          <p class="mt-1 text-xs text-text-faint">Script actions only need <code class="text-primary">group_id</code>. The script handles the message content.</p>
+        </div>
+      </div>
 
-  <div class="flex gap-3">
-    <%= form.submit class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors cursor-pointer" %>
-    <%= link_to "Cancel", bot_path(bot),
-      class: "rounded-md px-4 py-2 text-sm font-medium text-text-muted border border-border hover:bg-surface-overlay transition-colors" %>
+      <div class="flex items-center gap-2">
+        <%= form.check_box :enabled, class: "rounded border-border bg-surface text-primary focus:ring-primary" %>
+        <%= form.label :enabled, class: "text-sm text-text-muted" %>
+      </div>
+
+      <div class="flex gap-3">
+        <%= form.submit class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors cursor-pointer" %>
+        <%= link_to "Cancel", bot_path(bot),
+          class: "rounded-md px-4 py-2 text-sm font-medium text-text-muted border border-border hover:bg-surface-overlay transition-colors" %>
+      </div>
+    </div>
+
+    <%# Right column: script editor (hidden unless script type) %>
+    <div data-response-type-target="editorPanel" class="<%= 'hidden' unless scheduled_action.script? %>">
+      <%= render "shared/script_editor", form: form, field_name: :script_body %>
+    </div>
   </div>
 <% end %>

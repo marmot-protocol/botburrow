@@ -77,6 +77,66 @@ class TriggersControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  # -- Script triggers --
+
+  test "creating a script trigger saves action_type and script_body" do
+    assert_difference "Trigger.count", 1 do
+      post bot_triggers_path(@bot), params: {
+        trigger: {
+          name: "Script responder",
+          event_type: "message_received",
+          condition_type: "keyword",
+          condition_value: "flip",
+          action_type: "script",
+          script_body: "%w[Heads Tails].sample",
+          enabled: "1"
+        }
+      }
+    end
+
+    trigger = Trigger.last
+    assert_equal "Script responder", trigger.name
+    assert_equal "script", trigger.action_type
+    assert_equal "%w[Heads Tails].sample", trigger.script_body
+    assert_redirected_to bot_path(@bot)
+  end
+
+  test "creating a script trigger with missing script_body re-renders form" do
+    assert_no_difference "Trigger.count" do
+      post bot_triggers_path(@bot), params: {
+        trigger: {
+          name: "No body",
+          event_type: "message_received",
+          condition_type: "keyword",
+          condition_value: "test",
+          action_type: "script",
+          script_body: "",
+          enabled: "1"
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "creating a script trigger with invalid Ruby re-renders form with syntax error" do
+    assert_no_difference "Trigger.count" do
+      post bot_triggers_path(@bot), params: {
+        trigger: {
+          name: "Bad script trigger",
+          event_type: "message_received",
+          condition_type: "keyword",
+          condition_value: "test",
+          action_type: "script",
+          script_body: "def foo(",
+          enabled: "1"
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
   # -- Edit / Update --
 
   test "edit form renders with current values" do

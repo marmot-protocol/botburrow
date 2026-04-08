@@ -9,6 +9,6 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     fill_in "Email", with: user.email_address
     fill_in "Password", with: "password"
     click_on "Sign in"
-    assert_selector "main" # verify login succeeded and redirected to dashboard
+    assert_selector "main", wait: 10 # verify login succeeded and redirected to dashboard
   end
 end

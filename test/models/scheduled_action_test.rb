@@ -127,6 +127,51 @@ class ScheduledActionTest < ActiveSupport::TestCase
     assert_equal({}, action.parsed_action_config)
   end
 
+  # -- Script action type --
+
+  test "scheduled action with script type saves" do
+    action = ScheduledAction.new(
+      bot: bots(:relay_bot), name: "Script action",
+      schedule: "every 1h", action_type: :script,
+      action_config: '{"group_id": "g1"}',
+      script_body: '"Hello from script"'
+    )
+    assert action.valid?, "Expected valid, got: #{action.errors.full_messages}"
+    assert action.script?
+  end
+
+  test "scheduled action with script type validates script_body presence" do
+    action = ScheduledAction.new(
+      bot: bots(:relay_bot), name: "Script action",
+      schedule: "every 1h", action_type: :script,
+      action_config: '{"group_id": "g1"}',
+      script_body: nil
+    )
+    assert_not action.valid?
+    assert_includes action.errors[:script_body], "can't be blank"
+  end
+
+  test "scheduled action with script type and invalid Ruby fails validation" do
+    action = ScheduledAction.new(
+      bot: bots(:relay_bot), name: "Script action",
+      schedule: "every 1h", action_type: :script,
+      action_config: '{"group_id": "g1"}',
+      script_body: "def foo("
+    )
+    assert_not action.valid?
+    assert action.errors[:script_body].any? { |e| e.include?("syntax error") }
+  end
+
+  test "scheduled action with script type does NOT require message in action_config" do
+    action = ScheduledAction.new(
+      bot: bots(:relay_bot), name: "Script action",
+      schedule: "every 1h", action_type: :script,
+      action_config: '{"group_id": "g1"}',
+      script_body: '"Hello"'
+    )
+    assert action.valid?, "Expected valid, got: #{action.errors.full_messages}"
+  end
+
   test "enabled scope filters to enabled actions" do
     enabled = ScheduledAction.enabled
     assert enabled.all?(&:enabled?)
@@ -146,6 +191,7 @@ end
 #  name          :string           not null
 #  next_run_at   :datetime
 #  schedule      :string           not null
+#  script_body   :text
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  bot_id        :integer          not null

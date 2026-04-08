@@ -34,12 +34,51 @@ class MessageLogsTest < ApplicationSystemTestCase
 
     assert_text "/ping"
     assert_text "pong"
-    assert_text "incoming"
-    assert_text "outgoing"
+    assert_text "Incoming"
+    assert_text "Outgoing"
+  end
+
+  test "error entries display with distinctive styling" do
+    @bot.message_logs.create!(
+      group_id: "group123",
+      author: "system",
+      content: "Script error: RuntimeError: something broke",
+      direction: "error",
+      message_at: 1.hour.ago
+    )
+
+    visit bot_message_logs_path(@bot)
+    assert_text "Script error: RuntimeError: something broke"
+    assert_selector "span.text-danger", text: "Error"
+  end
+
+  test "error filter option works in direction dropdown" do
+    @bot.message_logs.create!(
+      group_id: "group123",
+      author: "npub1sender",
+      content: "/ping",
+      direction: "incoming",
+      message_at: 2.hours.ago
+    )
+    @bot.message_logs.create!(
+      group_id: "group123",
+      author: "system",
+      content: "Script error: NameError: undefined",
+      direction: "error",
+      message_at: 1.hour.ago
+    )
+
+    # Visit with filter pre-applied to verify controller filtering works
+    visit bot_message_logs_path(@bot, direction: "error")
+
+    assert_text "Script error"
+    assert_no_text "/ping"
+    assert_selector "span.text-danger", text: "Error"
   end
 
   test "message log link on bot show page" do
     visit bot_path(@bot)
-    assert_text "View message logs"
+    click_on "Logs"
+    assert_text "Message Logs"
   end
 end

@@ -1,12 +1,14 @@
 class ScheduledAction < ApplicationRecord
   belongs_to :bot
 
-  enum :action_type, { send_message: 0 }
+  enum :action_type, { send_message: 0, script: 1 }
 
   validates :name, presence: true
   validates :schedule, presence: true,
     format: { with: /\Aevery \d+[mhd]\z/, message: "must be like 'every 30m', 'every 1h', or 'every 1d'" }
   validates :action_config, presence: true
+  validates :script_body, presence: true, if: -> { script? }
+  validate :script_body_syntax, if: -> { script? && script_body.present? }
 
   before_save :compute_next_run, if: -> { schedule_changed? || next_run_at.nil? }
 
@@ -36,6 +38,12 @@ class ScheduledAction < ApplicationRecord
     when "d" then amount.to_i.days
     end
   end
+
+  def script_body_syntax
+    RubyVM::InstructionSequence.compile(script_body)
+  rescue SyntaxError => e
+    errors.add(:script_body, "has a syntax error: #{e.message}")
+  end
 end
 
 # == Schema Information
@@ -50,6 +58,7 @@ end
 #  name          :string           not null
 #  next_run_at   :datetime
 #  schedule      :string           not null
+#  script_body   :text
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  bot_id        :integer          not null

@@ -18,7 +18,7 @@ class CommandsControllerTest < ActionDispatch::IntegrationTest
 
   # -- New / Create --
 
-  test "new command form renders with response_type field" do
+  test "new command form renders" do
     get new_bot_command_path(@bot)
     assert_response :success
     assert_select "form" do
@@ -26,7 +26,6 @@ class CommandsControllerTest < ActionDispatch::IntegrationTest
       assert_select "input[name='command[pattern]']"
       assert_select "textarea[name='command[response_text]']"
       assert_select "input[name='command[enabled]']"
-      assert_select "select[name='command[response_type]']"
     end
   end
 
@@ -44,23 +43,6 @@ class CommandsControllerTest < ActionDispatch::IntegrationTest
     assert command.enabled?
     assert_equal @bot, command.bot
     assert_redirected_to bot_path(@bot)
-  end
-
-  test "creating a template command saves response_type" do
-    assert_difference "Command.count", 1 do
-      post bot_commands_path(@bot), params: {
-        command: {
-          name: "Greet",
-          pattern: "/greet",
-          response_text: "Hello {{author}}!",
-          response_type: "template",
-          enabled: "1"
-        }
-      }
-    end
-
-    command = Command.last
-    assert_equal "template", command.response_type
   end
 
   test "creating a command with invalid data re-renders form" do
@@ -106,6 +88,43 @@ class CommandsControllerTest < ActionDispatch::IntegrationTest
     patch bot_command_path(@bot, @command), params: {
       command: { name: "" }
     }
+
+    assert_response :unprocessable_entity
+  end
+
+  # -- Script commands --
+
+  test "creating a script command saves response_type and script body" do
+    assert_difference "Command.count", 1 do
+      post bot_commands_path(@bot), params: {
+        command: {
+          name: "Coin Flip",
+          pattern: "/flip",
+          response_text: "%w[Heads Tails].sample",
+          response_type: "script",
+          enabled: "1"
+        }
+      }
+    end
+
+    command = Command.last
+    assert_equal "script", command.response_type
+    assert_equal "%w[Heads Tails].sample", command.response_text
+    assert_redirected_to bot_path(@bot)
+  end
+
+  test "creating a script command with invalid Ruby re-renders form with syntax error" do
+    assert_no_difference "Command.count" do
+      post bot_commands_path(@bot), params: {
+        command: {
+          name: "Bad Script",
+          pattern: "/bad",
+          response_text: "def foo(",
+          response_type: "script",
+          enabled: "1"
+        }
+      }
+    end
 
     assert_response :unprocessable_entity
   end

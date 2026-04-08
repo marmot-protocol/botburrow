@@ -40,6 +40,7 @@ disabled_action:
 #  name          :string           not null
 #  next_run_at   :datetime
 #  schedule      :string           not null
+#  script_body   :text
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  bot_id        :integer          not null

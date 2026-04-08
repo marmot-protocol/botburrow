@@ -1,11 +1,12 @@
 class Command < ApplicationRecord
   belongs_to :bot
 
-  enum :response_type, { static: 0, template: 1, webhook: 2 }, default: :static
+  enum :response_type, { script: 3 }, default: :script
 
   validates :name, presence: true
   validates :pattern, presence: true, uniqueness: { scope: :bot_id }
   validates :response_text, presence: true
+  validate :script_body_syntax, if: -> { script? && response_text.present? }
 
   normalizes :name, with: -> { _1.strip }
   normalizes :pattern, with: -> { _1.strip }
@@ -22,13 +23,12 @@ class Command < ApplicationRecord
     message_text.strip[pattern.strip.length..].to_s.strip
   end
 
-  def render_response(context = {})
-    return response_text if static?
+  private
 
-    response_text.gsub(/\{\{(\w+)\}\}/) do |match|
-      key = $1.to_sym
-      context.key?(key) ? context[key].to_s : match
-    end
+  def script_body_syntax
+    RubyVM::InstructionSequence.compile(response_text)
+  rescue SyntaxError => e
+    errors.add(:response_text, "has a syntax error: #{e.message}")
   end
 end
 
@@ -41,7 +41,7 @@ end
 #  name          :string           not null
 #  pattern       :string           not null
 #  response_text :text             not null
-#  response_type :integer          default("static"), not null
+#  response_type :integer          default("script"), not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  bot_id        :integer          not null

@@ -43,6 +43,6 @@ class CommandsController < ApplicationController
   end
 
   def command_params
-    params.expect(command: [ :name, :pattern, :response_text, :response_type, :enabled ])
+    params.expect(command: [ :name, :pattern, :response_text, :enabled ])
   end
 end

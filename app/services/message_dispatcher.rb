@@ -27,26 +27,13 @@ class MessageDispatcher
 
     triggers = @bot.triggers.enabled.where(event_type: :message_received).order(:position).to_a
     matched_trigger = triggers.find { |t| t.matches?(content) }
-    execute_trigger(matched_trigger) if matched_trigger
+    execute_trigger(matched_trigger, content: content, author: author) if matched_trigger
   end
 
   private
 
   def resolve_command_response(command, content, author)
-    case command.response_type
-    when "static"
-      command.response_text
-    when "template"
-      args_text = command.extract_args(content) || ""
-      command.render_response(
-        author: author,
-        args: args_text,
-        bot_name: @bot.name,
-        timestamp: Time.current.iso8601
-      )
-    when "webhook"
-      dispatch_webhook_command(command, content, author)
-    end
+    dispatch_script_command(command, content, author)
   end
 
   def handle_builtin_command(commands, content)
@@ -74,34 +61,31 @@ class MessageDispatcher
     "#{@bot.name} | Running #{uptime} | #{commands.size} command(s) enabled"
   end
 
-  def dispatch_webhook_command(command, content, author)
-    url = command.response_text
-    endpoint = @bot.webhook_endpoints.enabled.find_by(url: url)
-    return nil unless endpoint
-
+  def dispatch_script_command(command, content, author)
     args_text = command.extract_args(content) || ""
-    payload = {
-      event: "command",
-      command: command.name,
-      args: args_text,
-      author: author,
-      bot_name: @bot.name,
-      timestamp: Time.current.iso8601
-    }
-
-    dispatcher = WebhookDispatcher.new(endpoint)
-    delivery, response = dispatcher.deliver(payload)
-
-    delivery.success? ? response&.body : nil
+    context = ScriptContext.new(
+      bot: @bot, group_id: @group_id,
+      author: author, message: content, args: args_text,
+      sender: method(:send_reply)
+    )
+    ScriptRunner.execute(command.response_text, context, bot: @bot, group_id: @group_id)
   end
 
-  def execute_trigger(trigger)
+  def execute_trigger(trigger, content:, author:)
     case trigger.action_type
     when "reply"
       response = trigger.parsed_action_config["response_text"]
       send_reply(response) if response.present?
     when "log_only"
       Rails.logger.info("[MessageDispatcher] Log-only trigger '#{trigger.name}' in group #{@group_id}")
+    when "script"
+      context = ScriptContext.new(
+        bot: @bot, group_id: @group_id,
+        author: author, message: content, args: nil,
+        sender: method(:send_reply)
+      )
+      response = ScriptRunner.execute(trigger.script_body, context, bot: @bot, group_id: @group_id)
+      send_reply(response) if response.present?
     end
   end
 

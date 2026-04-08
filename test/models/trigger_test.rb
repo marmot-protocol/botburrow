@@ -98,6 +98,41 @@ class TriggerTest < ActiveSupport::TestCase
     assert_equal "Spaced", trigger.name
   end
 
+  # -- Script action type --
+
+  test "trigger with script action type and valid script_body saves" do
+    trigger = Trigger.new(
+      bot: bots(:relay_bot), name: "Script trigger",
+      event_type: :message_received, condition_type: :keyword,
+      condition_value: "test", action_type: :script,
+      script_body: '"Hello from script"'
+    )
+    assert trigger.valid?
+    assert trigger.script?
+  end
+
+  test "trigger with script action type and no script_body fails validation" do
+    trigger = Trigger.new(
+      bot: bots(:relay_bot), name: "Script trigger",
+      event_type: :message_received, condition_type: :keyword,
+      condition_value: "test", action_type: :script,
+      script_body: nil
+    )
+    assert_not trigger.valid?
+    assert_includes trigger.errors[:script_body], "can't be blank"
+  end
+
+  test "trigger with script action type and invalid Ruby fails validation" do
+    trigger = Trigger.new(
+      bot: bots(:relay_bot), name: "Script trigger",
+      event_type: :message_received, condition_type: :keyword,
+      condition_value: "test", action_type: :script,
+      script_body: "def foo("
+    )
+    assert_not trigger.valid?
+    assert trigger.errors[:script_body].any? { |e| e.include?("syntax error") }
+  end
+
   test "parsed_action_config returns parsed JSON" do
     trigger = triggers(:keyword_trigger)
     config = trigger.parsed_action_config
@@ -128,6 +163,7 @@ end
 #  event_type      :integer          default("message_received"), not null
 #  name            :string           not null
 #  position        :integer
+#  script_body     :text
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  bot_id          :integer          not null

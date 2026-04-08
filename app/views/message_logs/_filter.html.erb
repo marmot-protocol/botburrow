@@ -7,7 +7,7 @@
 
   <div>
     <%= form.label :direction, "Direction", class: "block text-xs font-medium text-text-muted mb-1" %>
-    <%= form.select :direction, [["All", ""], ["Incoming", "incoming"], ["Outgoing", "outgoing"]],
+    <%= form.select :direction, [["All", ""], ["Incoming", "incoming"], ["Outgoing", "outgoing"], ["Error", "error"]],
       { selected: params[:direction] },
       class: "rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
   </div>

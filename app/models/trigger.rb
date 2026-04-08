@@ -3,10 +3,12 @@ class Trigger < ApplicationRecord
 
   enum :event_type, { message_received: 0, member_joined: 1, member_left: 2 }
   enum :condition_type, { keyword: 0, regex: 1, any: 2 }
-  enum :action_type, { reply: 0, log_only: 2 }
+  enum :action_type, { reply: 0, log_only: 2, script: 3 }
 
   validates :name, presence: true
   validates :condition_value, presence: true, unless: -> { any? }
+  validates :script_body, presence: true, if: -> { script? }
+  validate :script_body_syntax, if: -> { script? && script_body.present? }
 
   normalizes :name, with: -> { _1.strip }
 
@@ -28,6 +30,14 @@ class Trigger < ApplicationRecord
   rescue JSON::ParserError
     {}
   end
+
+  private
+
+  def script_body_syntax
+    RubyVM::InstructionSequence.compile(script_body)
+  rescue SyntaxError => e
+    errors.add(:script_body, "has a syntax error: #{e.message}")
+  end
 end
 
 # == Schema Information
@@ -43,6 +53,7 @@ end
 #  event_type      :integer          default("message_received"), not null
 #  name            :string           not null
 #  position        :integer
+#  script_body     :text
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  bot_id          :integer          not null

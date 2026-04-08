@@ -1,3 +1,5 @@
+<%= turbo_stream_from @bot %>
+
 <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
   <div class="flex items-center gap-4">
     <%= bot_avatar(@bot, size: 12) %>
@@ -8,26 +10,12 @@
       <% end %>
     </div>
   </div>
-  <div class="flex gap-2">
-    <% if @bot.stopped? || @bot.error? %>
-      <%= button_to "Start", start_bot_path(@bot), method: :post,
-        class: "rounded-md px-4 py-2 text-sm font-medium text-success border border-success/30 hover:bg-success/10 transition-colors" %>
-    <% end %>
-    <% if @bot.running? || @bot.starting? %>
-      <%= button_to "Stop", stop_bot_path(@bot), method: :post,
-        class: "rounded-md px-4 py-2 text-sm font-medium text-danger border border-danger/30 hover:bg-danger/10 transition-colors" %>
-    <% end %>
-    <%= link_to "Edit", edit_bot_path(@bot),
-      class: "rounded-md px-4 py-2 text-sm font-medium text-text-muted border border-border hover:bg-surface-overlay transition-colors" %>
-    <%= button_to "Delete", bot_path(@bot), method: :delete,
-      data: { turbo_confirm: "Are you sure?" },
-      class: "rounded-md px-4 py-2 text-sm font-medium text-danger border border-danger/30 hover:bg-danger/10 transition-colors" %>
-  </div>
+  <%= render "bots/status_bar", bot: @bot %>
 </div>
 
 <div data-controller="tabs">
   <div class="mb-6 flex gap-6 border-b border-border overflow-x-auto">
-    <% %w[overview commands triggers schedules webhooks logs].each_with_index do |tab, i| %>
+    <% %w[overview commands triggers schedules logs].each_with_index do |tab, i| %>
       <button data-tabs-target="tab" data-tabs-id="<%= tab %>" data-action="tabs#select"
         class="whitespace-nowrap border-b-2 pb-3 text-sm font-medium transition-colors
                <%= i == 0 ? 'border-primary text-text' : 'border-transparent text-text-muted' %>
@@ -51,10 +39,6 @@
 
   <div id="schedules" data-tabs-target="panel" class="hidden">
     <%= render "bots/tabs/schedules", bot: @bot %>
-  </div>
-
-  <div id="webhooks" data-tabs-target="panel" class="hidden">
-    <%= render "bots/tabs/webhooks", bot: @bot %>
   </div>
 
   <div id="logs" data-tabs-target="panel" class="hidden">

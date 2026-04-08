@@ -18,14 +18,14 @@
       </thead>
       <tbody class="divide-y divide-border">
         <% @logs.each do |log| %>
-          <tr class="hover:bg-surface-overlay transition-colors">
+          <tr class="<%= log.direction == 'error' ? 'bg-danger/5' : '' %> hover:bg-surface-overlay transition-colors">
             <td class="px-4 py-3 text-text-muted"><%= log.message_at.to_fs(:short) %></td>
             <td class="px-4 py-3">
-              <span class="<%= log.direction == 'incoming' ? 'text-primary' : 'text-success' %>"><%= log.direction.capitalize %></span>
+              <span class="<%= case log.direction when 'incoming' then 'text-primary' when 'error' then 'text-danger' else 'text-success' end %>"><%= log.direction.capitalize %></span>
             </td>
             <td class="px-4 py-3 font-mono text-xs text-text-faint"><%= truncate(log.group_id, length: 20) %></td>
             <td class="px-4 py-3 text-text-muted"><%= truncate(log.author, length: 20) %></td>
-            <td class="px-4 py-3"><%= truncate(log.content, length: 80) %></td>
+            <td class="px-4 py-3 <%= 'font-mono text-xs' if log.direction == 'error' %>"><%= truncate(log.content, length: 80) %></td>
           </tr>
         <% end %>
       </tbody>

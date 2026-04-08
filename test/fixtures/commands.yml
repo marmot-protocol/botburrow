@@ -2,21 +2,24 @@ ping:
   bot: relay_bot
   name: Ping
   pattern: /ping
-  response_text: pong!
+  response_text: '"pong!"'
+  response_type: 3
   enabled: true
 
 help:
   bot: relay_bot
   name: Help
   pattern: /help
-  response_text: "Available commands: /ping, /help"
+  response_text: '"Available commands: /ping, /help"'
+  response_type: 3
   enabled: true
 
 disabled_command:
   bot: relay_bot
   name: Secret
   pattern: /secret
-  response_text: "You found a secret!"
+  response_text: '"You found a secret!"'
+  response_type: 3
   enabled: false
 
 # == Schema Information
@@ -28,7 +31,7 @@ disabled_command:
 #  name          :string           not null
 #  pattern       :string           not null
 #  response_text :text             not null
-#  response_type :integer          default("static"), not null
+#  response_type :integer          default("script"), not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  bot_id        :integer          not null

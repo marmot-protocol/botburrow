@@ -94,6 +94,7 @@ end
 #  name                    :string           not null
 #  npub                    :string           not null
 #  picture_url             :string
+#  script_data             :text             default("{}"), not null
 #  status                  :integer          default("stopped"), not null
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null

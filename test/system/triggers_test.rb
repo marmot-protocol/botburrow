@@ -26,6 +26,7 @@ class TriggersTest < ApplicationSystemTestCase
     click_on "Create Trigger"
 
     assert_text "Trigger was successfully created"
+    click_on "Triggers"
     assert_text "Welcome"
   end
 
@@ -49,6 +50,22 @@ class TriggersTest < ApplicationSystemTestCase
     assert_text "Trigger was successfully updated"
   end
 
+  test "create a script trigger via the UI" do
+    visit new_bot_trigger_path(@bot)
+    assert_selector "h1", text: "New trigger"
+
+    fill_in "Name", with: "Script Trigger"
+    select "Message received", from: "Event type"
+    select "Keyword", from: "Condition type"
+    fill_in "Condition value", with: "flip"
+    select "Script", from: "Action type"
+    # CodeMirror hides the textarea; set value directly for form submission
+    page.execute_script("document.querySelector(\"textarea[name='trigger[script_body]']\").value = \"%w[Heads Tails].sample\"")
+    click_on "Create Trigger"
+
+    assert_text "Trigger was successfully created"
+  end
+
   test "triggers appear on bot show page" do
     @bot.triggers.create!(
       name: "Greeter",
@@ -61,7 +78,7 @@ class TriggersTest < ApplicationSystemTestCase
     )
 
     visit bot_path(@bot)
-    assert_text "Triggers"
+    click_on "Triggers"
     assert_text "Greeter"
     assert_text "Keyword"
   end

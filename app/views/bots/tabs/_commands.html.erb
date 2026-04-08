@@ -11,7 +11,6 @@
         <tr class="border-b border-border text-left text-text-muted">
           <th class="px-4 py-3 font-medium">Name</th>
           <th class="px-4 py-3 font-medium">Pattern</th>
-          <th class="px-4 py-3 font-medium">Type</th>
           <th class="px-4 py-3 font-medium">Enabled</th>
           <th class="px-4 py-3 font-medium">Actions</th>
         </tr>
@@ -21,7 +20,6 @@
           <tr class="hover:bg-surface-overlay transition-colors">
             <td class="px-4 py-3"><%= command.name %></td>
             <td class="px-4 py-3 font-mono text-xs"><%= command.pattern %></td>
-            <td class="px-4 py-3 text-text-muted"><%= command.response_type.humanize %></td>
             <td class="px-4 py-3">
               <span class="<%= command.enabled? ? 'text-success' : 'text-text-faint' %>">
                 <%= command.enabled? ? "Yes" : "No" %>

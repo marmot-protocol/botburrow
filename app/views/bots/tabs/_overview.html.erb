@@ -2,16 +2,7 @@
   <div class="rounded-lg border border-border bg-surface-raised p-4">
     <h3 class="mb-3 text-sm font-medium text-text-muted">Details</h3>
     <dl class="space-y-2 text-sm">
-      <div class="flex justify-between">
-        <dt class="text-text-muted">Status</dt>
-        <dd class="font-medium <%= status_color(bot.status) %>"><%= bot.status.capitalize %></dd>
-      </div>
-      <% if bot.error_message.present? %>
-        <div class="flex justify-between">
-          <dt class="text-text-muted">Error</dt>
-          <dd class="text-danger"><%= bot.error_message %></dd>
-        </div>
-      <% end %>
+      <%= render "bots/status_detail", bot: bot %>
       <div class="flex justify-between">
         <dt class="text-text-muted">Auto-accept invitations</dt>
         <dd><%= bot.auto_accept_invitations? ? "Yes" : "No" %></dd>

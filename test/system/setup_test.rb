@@ -7,8 +7,8 @@ class SetupTest < ApplicationSystemTestCase
     visit root_path
     assert_current_path new_setup_path
 
-    assert_text "Welcome to Botburrow"
-    fill_in "Email address", with: "admin@botburrow.local"
+    assert_text "Create your admin account to get started"
+    fill_in "Email", with: "admin@botburrow.local"
     fill_in "user_password", with: "securepassword"
     fill_in "user_password_confirmation", with: "securepassword"
     click_on "Create Account"

@@ -47,6 +47,6 @@ class ScheduledActionsController < ApplicationController
   end
 
   def scheduled_action_params
-    params.expect(scheduled_action: [ :name, :schedule, :action_type, :action_config, :enabled ])
+    params.expect(scheduled_action: [ :name, :schedule, :action_type, :action_config, :script_body, :enabled ])
   end
 end

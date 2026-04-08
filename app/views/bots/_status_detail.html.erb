@@ -1,0 +1,12 @@
+<div id="<%= dom_id(bot, :status_detail) %>">
+  <div class="flex justify-between">
+    <dt class="text-text-muted">Status</dt>
+    <dd class="font-medium <%= status_color(bot.status) %>"><%= bot.status.capitalize %></dd>
+  </div>
+  <% if bot.error_message.present? %>
+    <div class="flex justify-between">
+      <dt class="text-text-muted">Error</dt>
+      <dd class="text-danger"><%= bot.error_message %></dd>
+    </div>
+  <% end %>
+</div>

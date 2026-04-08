@@ -1,5 +1,4 @@
 require "test_helper"
-require "webmock/minitest"
 
 class MessageDispatcherTest < ActiveSupport::TestCase
   setup do
@@ -10,7 +9,7 @@ class MessageDispatcherTest < ActiveSupport::TestCase
   end
 
   test "dispatches matching command response" do
-    @bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: true)
+    @bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
 
     dispatch(content: "/ping", author: "alice")
 
@@ -18,28 +17,16 @@ class MessageDispatcherTest < ActiveSupport::TestCase
   end
 
   test "skips disabled commands" do
-    @bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: false)
+    @bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: false)
 
     dispatch(content: "/ping", author: "alice")
 
     assert_nothing_sent
   end
 
-  test "dispatches template response with interpolation" do
-    @bot.commands.create!(
-      name: "Greet", pattern: "/greet",
-      response_text: "Hello {{author}}, args: {{args}}",
-      response_type: :template, enabled: true
-    )
-
-    dispatch(content: "/greet world", author: "alice")
-
-    assert_sent "Hello alice, args: world"
-  end
-
   test "dispatches built-in /help listing enabled commands" do
-    @bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: true)
-    @bot.commands.create!(name: "Secret", pattern: "/secret", response_text: "hidden", enabled: false)
+    @bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
+    @bot.commands.create!(name: "Secret", pattern: "/secret", response_text: '"hidden"', enabled: false)
 
     dispatch(content: "/help", author: "alice")
 
@@ -50,7 +37,7 @@ class MessageDispatcherTest < ActiveSupport::TestCase
   end
 
   test "dispatches built-in /status with bot info" do
-    @bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: true)
+    @bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
 
     dispatch(content: "/status", author: "alice")
 
@@ -100,7 +87,7 @@ class MessageDispatcherTest < ActiveSupport::TestCase
   end
 
   test "commands take priority over triggers" do
-    @bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: true)
+    @bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
     @bot.triggers.create!(
       name: "Catch-all", event_type: :message_received, condition_type: :any,
       action_type: :reply, action_config: '{"response_text": "Caught!"}',
@@ -123,7 +110,7 @@ class MessageDispatcherTest < ActiveSupport::TestCase
   end
 
   test "logs outgoing response" do
-    @bot.commands.create!(name: "Ping", pattern: "/ping", response_text: "pong!", enabled: true)
+    @bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
 
     dispatch(content: "/ping", author: "alice")
 
@@ -139,20 +126,70 @@ class MessageDispatcherTest < ActiveSupport::TestCase
     assert_equal 0, @bot.message_logs.outgoing.count
   end
 
-  test "webhook command dispatches to endpoint and sends response" do
-    endpoint = @bot.webhook_endpoints.create!(name: "Hook", url: "https://example.com/hook", enabled: true)
+  # -- Script command tests --
+
+  test "script command returns a string reply" do
     @bot.commands.create!(
-      name: "Ask", pattern: "/ask", response_text: endpoint.url,
-      response_type: :webhook, enabled: true
+      name: "Hello", pattern: "/hello",
+      response_text: '"Hello from script!"',
+      response_type: :script, enabled: true
     )
 
-    stub_request(:post, "https://example.com/hook")
-      .to_return(status: 200, body: "Webhook says hello!")
+    dispatch(content: "/hello", author: "alice")
 
-    dispatch(content: "/ask something", author: "alice")
+    assert_sent "Hello from script!"
+  end
 
-    assert_sent "Webhook says hello!"
-    assert_equal 1, WebhookDelivery.count
+  test "script command returning nil does not send a reply" do
+    @bot.commands.create!(
+      name: "Silent", pattern: "/silent",
+      response_text: 'store["counter"] = 1; nil',
+      response_type: :script, enabled: true
+    )
+
+    dispatch(content: "/silent", author: "alice")
+
+    assert_nothing_sent
+  end
+
+  test "script trigger returns a reply" do
+    @bot.triggers.create!(
+      name: "Script", event_type: :message_received, condition_type: :keyword,
+      condition_value: "hello", action_type: :script,
+      script_body: '"Hello from trigger script!"',
+      position: 1, enabled: true
+    )
+
+    dispatch(content: "hello world", author: "alice")
+
+    assert_sent "Hello from trigger script!"
+  end
+
+  test "existing reply trigger still works after refactor" do
+    @bot.triggers.create!(
+      name: "Hello", event_type: :message_received, condition_type: :keyword,
+      condition_value: "hello", action_type: :reply,
+      action_config: '{"response_text": "Hello back!"}', position: 1, enabled: true
+    )
+
+    dispatch(content: "hello world", author: "alice")
+
+    assert_sent "Hello back!"
+  end
+
+  test "script command with send_message sends multiple messages" do
+    @bot.commands.create!(
+      name: "Multi", pattern: "/multi",
+      response_text: 'send_message("first"); send_message("second"); "third"',
+      response_type: :script, enabled: true
+    )
+
+    dispatch(content: "/multi", author: "alice")
+
+    assert_equal 3, @wnd_calls.size
+    assert_equal "first", @wnd_calls[0][:message]
+    assert_equal "second", @wnd_calls[1][:message]
+    assert_equal "third", @wnd_calls[2][:message]
   end
 
   private
