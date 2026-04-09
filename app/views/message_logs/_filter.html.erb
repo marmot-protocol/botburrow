@@ -1,8 +1,17 @@
-<%= form_with url: bot_message_logs_path(bot), method: :get, class: "mb-4 flex flex-wrap gap-3 items-end" do |form| %>
+<%# locals: (bot:, groups: []) -%>
+<%= form_with url: bot_message_logs_path(bot), method: :get, data: { turbo_frame: "logs_content" }, class: "mb-4 flex flex-wrap gap-3 items-end" do |form| %>
   <div>
-    <%= form.label :group_id, "Group ID", class: "block text-xs font-medium text-text-muted mb-1" %>
-    <%= form.text_field :group_id, value: params[:group_id], placeholder: "Filter by group",
-      class: "rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+    <%= form.label :group_id, "Group", class: "block text-xs font-medium text-text-muted mb-1" %>
+    <% active_groups = groups.select { |g| g[:state] == "active" } %>
+    <% if active_groups.any? %>
+      <%= form.select :group_id,
+        active_groups.map { |g| ["#{g[:name]} (#{g[:id].first(8)}...)", g[:id]] },
+        { include_blank: "All groups", selected: params[:group_id] },
+        class: "rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+    <% else %>
+      <%= form.text_field :group_id, value: params[:group_id], placeholder: "Filter by group",
+        class: "rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+    <% end %>
   </div>
 
   <div>

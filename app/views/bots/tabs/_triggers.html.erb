@@ -10,9 +10,7 @@
       <thead>
         <tr class="border-b border-border text-left text-text-muted">
           <th class="px-4 py-3 font-medium">Name</th>
-          <th class="px-4 py-3 font-medium">Event</th>
           <th class="px-4 py-3 font-medium">Condition</th>
-          <th class="px-4 py-3 font-medium">Action</th>
           <th class="px-4 py-3 font-medium">Enabled</th>
           <th class="px-4 py-3 font-medium">Actions</th>
         </tr>
@@ -21,25 +19,23 @@
         <% bot.triggers.order(:position).each do |trigger| %>
           <tr class="hover:bg-surface-overlay transition-colors">
             <td class="px-4 py-3"><%= trigger.name %></td>
-            <td class="px-4 py-3 text-text-muted"><%= trigger.event_type.humanize %></td>
             <td class="px-4 py-3">
               <%= trigger.condition_type.humanize %>
               <% if trigger.condition_value.present? %>
                 <span class="ml-1 font-mono text-xs text-text-faint"><%= trigger.condition_value %></span>
               <% end %>
             </td>
-            <td class="px-4 py-3 text-text-muted"><%= trigger.action_type.humanize %></td>
             <td class="px-4 py-3">
-              <span class="<%= trigger.enabled? ? 'text-success' : 'text-text-faint' %>">
-                <%= trigger.enabled? ? "Yes" : "No" %>
-              </span>
+              <%= render "shared/toggle_enabled", record: trigger, url: toggle_enabled_bot_trigger_path(bot, trigger) %>
             </td>
-            <td class="flex gap-2 px-4 py-3">
-              <%= link_to "Edit", edit_bot_trigger_path(bot, trigger),
-                class: "text-xs text-primary hover:text-primary-hover" %>
-              <%= button_to "Delete", bot_trigger_path(bot, trigger), method: :delete,
-                data: { turbo_confirm: "Are you sure?" },
-                class: "text-xs text-danger hover:text-danger-hover" %>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-3">
+                <%= link_to "Edit", edit_bot_trigger_path(bot, trigger),
+                  class: "text-xs text-primary hover:text-primary-hover" %>
+                <%= link_to "Delete", bot_trigger_path(bot, trigger),
+                  data: { turbo_method: :delete, turbo_confirm: "Are you sure?" },
+                  class: "text-xs text-danger hover:text-danger-hover" %>
+              </div>
             </td>
           </tr>
         <% end %>
@@ -47,5 +43,9 @@
     </table>
   </div>
 <% else %>
-  <p class="rounded-lg border border-border bg-surface-raised p-6 text-center text-sm text-text-faint">No triggers yet.</p>
+  <div class="rounded-lg border border-border bg-surface-raised p-8 text-center">
+    <p class="text-text-muted mb-4">No triggers yet. Triggers react to events like new messages or members joining.</p>
+    <%= link_to "Create a trigger", new_bot_trigger_path(bot),
+      class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors" %>
+  </div>
 <% end %>

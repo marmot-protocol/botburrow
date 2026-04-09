@@ -23,18 +23,18 @@
             <td class="px-4 py-3"><%= action.name %></td>
             <td class="px-4 py-3 font-mono text-xs"><%= action.schedule %></td>
             <td class="px-4 py-3">
-              <span class="<%= action.enabled? ? 'text-success' : 'text-text-faint' %>">
-                <%= action.enabled? ? "Yes" : "No" %>
-              </span>
+              <%= render "shared/toggle_enabled", record: action, url: toggle_enabled_bot_scheduled_action_path(bot, action) %>
             </td>
             <td class="px-4 py-3 text-text-muted"><%= action.last_run_at&.to_fs(:short) || "Never" %></td>
             <td class="px-4 py-3 text-text-muted"><%= action.next_run_at&.to_fs(:short) || "Not scheduled" %></td>
-            <td class="flex gap-2 px-4 py-3">
-              <%= link_to "Edit", edit_bot_scheduled_action_path(bot, action),
-                class: "text-xs text-primary hover:text-primary-hover" %>
-              <%= button_to "Delete", bot_scheduled_action_path(bot, action), method: :delete,
-                data: { turbo_confirm: "Are you sure?" },
-                class: "text-xs text-danger hover:text-danger-hover" %>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-3">
+                <%= link_to "Edit", edit_bot_scheduled_action_path(bot, action),
+                  class: "text-xs text-primary hover:text-primary-hover" %>
+                <%= link_to "Delete", bot_scheduled_action_path(bot, action),
+                  data: { turbo_method: :delete, turbo_confirm: "Are you sure?" },
+                  class: "text-xs text-danger hover:text-danger-hover" %>
+              </div>
             </td>
           </tr>
         <% end %>
@@ -42,5 +42,9 @@
     </table>
   </div>
 <% else %>
-  <p class="rounded-lg border border-border bg-surface-raised p-6 text-center text-sm text-text-faint">No scheduled actions yet.</p>
+  <div class="rounded-lg border border-border bg-surface-raised p-8 text-center">
+    <p class="text-text-muted mb-4">No scheduled actions yet. Schedule recurring tasks like daily greetings.</p>
+    <%= link_to "Create a scheduled action", new_bot_scheduled_action_path(bot),
+      class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors" %>
+  </div>
 <% end %>

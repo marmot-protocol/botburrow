@@ -13,4 +13,12 @@ class ApplicationController < ActionController::Base
   def wnd_unavailable(exception)
     redirect_back fallback_location: root_path, alert: "Cannot reach wnd: #{exception.message}"
   end
+
+  def render_toggle(record, url)
+    render turbo_stream: turbo_stream.replace(
+      ActionView::RecordIdentifier.dom_id(record, :toggle),
+      partial: "shared/toggle_enabled",
+      locals: { record: record, url: url }
+    )
+  end
 end

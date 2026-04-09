@@ -23,6 +23,16 @@ class LayoutTest < ApplicationSystemTestCase
     assert_no_text "Bot was successfully updated"
   end
 
+  test "flash notice auto-dismisses after a few seconds" do
+    bot = bots(:relay_bot)
+    visit edit_bot_path(bot)
+    fill_in "Name", with: "AutoDismiss"
+    click_on "Update Bot"
+
+    assert_text "Bot was successfully updated"
+    assert_no_text "Bot was successfully updated", wait: 8
+  end
+
   test "sidebar navigation links to bots" do
     visit root_path
     within "nav" do
@@ -35,6 +45,31 @@ class LayoutTest < ApplicationSystemTestCase
     within "nav" do
       assert_button "Log out"
     end
+  end
+
+  test "nested pages show back link to bot" do
+    bot = bots(:relay_bot)
+
+    # Command new page
+    visit new_bot_command_path(bot)
+    back_link = find("a", text: bot.name)
+    assert_equal bot_path(bot), URI(back_link[:href]).path
+
+    # Trigger edit page
+    trigger = triggers(:keyword_trigger)
+    visit edit_bot_trigger_path(bot, trigger)
+    back_link = find("a", text: bot.name)
+    assert_equal bot_path(bot), URI(back_link[:href]).path
+
+    # Scheduled action new page
+    visit new_bot_scheduled_action_path(bot)
+    back_link = find("a", text: bot.name)
+    assert_equal bot_path(bot), URI(back_link[:href]).path
+
+    # Bot edit page
+    visit edit_bot_path(bot)
+    back_link = find("a", text: bot.name)
+    assert_equal bot_path(bot), URI(back_link[:href]).path
   end
 
   test "bot detail tabs switch content" do

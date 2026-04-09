@@ -2,35 +2,55 @@
   <h2 class="text-lg font-medium">Message Logs</h2>
 </div>
 
-<%= render "message_logs/filter", bot: bot %>
+<%= turbo_frame_tag "logs_content" do %>
+  <% group_names = groups.to_h { |g| [g[:id], g[:name]] } %>
 
-<% if logs.any? %>
-  <div class="rounded-lg border border-border bg-surface-raised overflow-hidden">
-    <table class="w-full text-sm">
-      <thead>
-        <tr class="border-b border-border text-left text-text-muted">
-          <th class="px-4 py-3 font-medium">Time</th>
-          <th class="px-4 py-3 font-medium">Direction</th>
-          <th class="px-4 py-3 font-medium">Group ID</th>
-          <th class="px-4 py-3 font-medium">Author</th>
-          <th class="px-4 py-3 font-medium">Content</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-border">
-        <% logs.each do |log| %>
-          <tr class="<%= log.direction == 'error' ? 'bg-danger/5' : '' %> hover:bg-surface-overlay transition-colors">
-            <td class="px-4 py-3 text-text-muted"><%= log.message_at.to_fs(:short) %></td>
-            <td class="px-4 py-3">
-              <span class="<%= case log.direction when 'incoming' then 'text-primary' when 'error' then 'text-danger' else 'text-success' end %>"><%= log.direction.capitalize %></span>
-            </td>
-            <td class="px-4 py-3 font-mono text-xs text-text-faint"><%= truncate(log.group_id, length: 20) %></td>
-            <td class="px-4 py-3 text-text-muted"><%= truncate(log.author, length: 20) %></td>
-            <td class="px-4 py-3 <%= 'font-mono text-xs' if log.direction == 'error' %>"><%= truncate(log.content, length: 80) %></td>
+  <%= render "message_logs/filter", bot: bot, groups: groups %>
+
+  <% if logs.any? %>
+    <div class="rounded-lg border border-border bg-surface-raised overflow-hidden">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-border text-left text-text-muted">
+            <th class="px-4 py-3 font-medium">Time</th>
+            <th class="px-4 py-3 font-medium">Direction</th>
+            <th class="px-4 py-3 font-medium">Group</th>
+            <th class="px-4 py-3 font-medium">Author</th>
+            <th class="px-4 py-3 font-medium">Content</th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
-  </div>
-<% else %>
-  <p class="rounded-lg border border-border bg-surface-raised p-6 text-center text-sm text-text-faint">No message logs found.</p>
+        </thead>
+        <tbody class="divide-y divide-border">
+          <% logs.each do |log| %>
+            <tr class="<%= log.direction == 'error' ? 'bg-danger/5' : '' %> hover:bg-surface-overlay transition-colors">
+              <td class="px-4 py-3 text-text-muted"><%= log.message_at.to_fs(:short) %></td>
+              <td class="px-4 py-3">
+                <span class="<%= case log.direction when 'incoming' then 'text-primary' when 'error' then 'text-danger' else 'text-success' end %>"><%= log.direction.capitalize %></span>
+              </td>
+              <td class="px-4 py-3">
+                <% if (name = group_names[log.group_id]) %>
+                  <span class="text-text"><%= name %></span>
+                  <span class="ml-1 font-mono text-xs text-text-faint"><%= truncate(log.group_id, length: 12) %></span>
+                <% else %>
+                  <span class="font-mono text-xs text-text-faint"><%= truncate(log.group_id, length: 20) %></span>
+                <% end %>
+              </td>
+              <td class="px-4 py-3 text-text-muted"><%= truncate(log.author, length: 20) %></td>
+              <td class="px-4 py-3 <%= 'font-mono text-xs' if log.direction == 'error' %>">
+                <% if log.content.length > 80 %>
+                  <div data-controller="expandable" data-action="click->expandable#toggle" class="cursor-pointer" title="Click to expand">
+                    <span data-expandable-target="short"><%= truncate(log.content, length: 80) %></span>
+                    <span data-expandable-target="full" class="hidden whitespace-pre-wrap break-all"><%= log.content %></span>
+                  </div>
+                <% else %>
+                  <%= log.content %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="rounded-lg border border-border bg-surface-raised p-6 text-center text-sm text-text-faint">No message logs found.</p>
+  <% end %>
 <% end %>

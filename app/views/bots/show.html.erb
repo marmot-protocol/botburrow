@@ -23,6 +23,8 @@
         <%= tab.capitalize %>
       </button>
     <% end %>
+    <%= link_to "Chat", bot_chat_path(@bot),
+      class: "whitespace-nowrap border-b-2 border-transparent pb-3 text-sm font-medium text-text-muted transition-colors hover:text-text" %>
   </div>
 
   <div id="overview" data-tabs-target="panel">
@@ -42,6 +44,6 @@
   </div>
 
   <div id="logs" data-tabs-target="panel" class="hidden">
-    <%= render "bots/tabs/logs", bot: @bot, logs: @logs %>
+    <%= render "bots/tabs/logs", bot: @bot, logs: @logs, groups: @groups %>
   </div>
 </div>

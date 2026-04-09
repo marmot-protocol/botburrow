@@ -72,6 +72,10 @@ module Wnd
       request("profile_show", account: account)
     end
 
+    def users_show(pubkey:)
+      request("users_show", pubkey: pubkey)
+    end
+
     def daemon_status
       request("ping")
     end

@@ -124,10 +124,10 @@ class ScriptContext
         raise "Response body exceeds 1MB limit"
       end
     end
-    body
+    body.force_encoding("UTF-8")
   rescue IOError
     # Response already read (e.g., in test stubs)
-    response.body || ""
+    (response.body || "").force_encoding("UTF-8")
   end
 
   def parse_response_body(body, content_type)

@@ -3,13 +3,25 @@ class MessageLog < ApplicationRecord
 
   validates :group_id, :author, :content, :direction, :message_at, presence: true
 
+  after_create_commit :broadcast_to_chat
+
   scope :incoming, -> { where(direction: "incoming") }
   scope :outgoing, -> { where(direction: "outgoing") }
   scope :errors, -> { where(direction: "error") }
   scope :recent, -> { order(message_at: :desc) }
-end
 
-# == Schema Information
+  private
+
+  def broadcast_to_chat
+    return if direction == "error"
+
+    broadcast_append_to bot, target: "chat_messages",
+      partial: "chat/message",
+      locals: { message: self, bot_npub: bot.npub }
+  rescue => e
+    Rails.logger.warn("[MessageLog] Chat broadcast failed: #{e.message}")
+  end
+end
 #
 # Table name: message_logs
 #

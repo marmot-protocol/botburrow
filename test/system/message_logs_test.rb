@@ -5,12 +5,14 @@ class MessageLogsTest < ApplicationSystemTestCase
   setup do
     @wnd_stub = WndStubFactory.new
     BotsController.wnd_client_class = @wnd_stub
+    MessageLogsController.wnd_client_class = @wnd_stub
     sign_in
     @bot = bots(:relay_bot)
   end
 
   teardown do
     BotsController.wnd_client_class = Wnd::Client
+    MessageLogsController.wnd_client_class = Wnd::Client
   end
 
   test "view message logs" do
@@ -78,7 +80,7 @@ class MessageLogsTest < ApplicationSystemTestCase
 
   test "message log link on bot show page" do
     visit bot_path(@bot)
-    click_on "Logs"
-    assert_text "Message Logs"
+    find("button", text: "Logs").click
+    assert_selector "h2", text: "Message Logs", visible: true
   end
 end

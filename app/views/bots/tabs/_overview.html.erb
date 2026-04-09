@@ -38,14 +38,19 @@
         <% groups.each do |group| %>
           <tr>
             <td class="py-2"><%= group[:name] %></td>
-            <td class="py-2 font-mono text-xs text-text-faint"><%= truncate(group[:id], length: 20) %></td>
+            <td class="py-2 font-mono text-xs text-text-faint" data-controller="clipboard" data-clipboard-text-value="<%= group[:id] %>">
+              <span class="break-all"><%= group[:id] %></span>
+              <button data-action="clipboard#copy" class="ml-1 align-middle text-text-faint hover:text-text transition-colors" aria-label="Copy group ID">
+                <svg class="inline h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3.5A1.5 1.5 0 0 1 8.5 2h3.879a1.5 1.5 0 0 1 1.06.44l3.122 3.12A1.5 1.5 0 0 1 17 6.622V12.5a1.5 1.5 0 0 1-1.5 1.5h-1v-3.379a3 3 0 0 0-.879-2.121L10.5 5.379A3 3 0 0 0 8.379 4.5H7v-1Z"/><path d="M4.5 6A1.5 1.5 0 0 0 3 7.5v9A1.5 1.5 0 0 0 4.5 18h7a1.5 1.5 0 0 0 1.5-1.5v-5.879a1.5 1.5 0 0 0-.44-1.06L9.44 6.439A1.5 1.5 0 0 0 8.378 6H4.5Z"/></svg>
+              </button>
+            </td>
             <td class="py-2"><%= group[:state] %></td>
           </tr>
         <% end %>
       </tbody>
     </table>
   <% else %>
-    <p class="text-sm text-text-faint">Not a member of any groups yet.</p>
+    <p class="text-sm text-text-muted">Not a member of any groups yet. Invite this bot to a group to get started.</p>
   <% end %>
 </div>
 
@@ -64,7 +69,12 @@
         <% invitations.each do |inv| %>
           <tr>
             <td class="py-2"><%= inv[:name] %></td>
-            <td class="py-2 font-mono text-xs text-text-faint"><%= truncate(inv[:id], length: 16) %></td>
+            <td class="py-2 font-mono text-xs text-text-faint" data-controller="clipboard" data-clipboard-text-value="<%= inv[:id] %>">
+              <span class="break-all"><%= inv[:id] %></span>
+              <button data-action="clipboard#copy" class="ml-1 align-middle text-text-faint hover:text-text transition-colors" aria-label="Copy group ID">
+                <svg class="inline h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3.5A1.5 1.5 0 0 1 8.5 2h3.879a1.5 1.5 0 0 1 1.06.44l3.122 3.12A1.5 1.5 0 0 1 17 6.622V12.5a1.5 1.5 0 0 1-1.5 1.5h-1v-3.379a3 3 0 0 0-.879-2.121L10.5 5.379A3 3 0 0 0 8.379 4.5H7v-1Z"/><path d="M4.5 6A1.5 1.5 0 0 0 3 7.5v9A1.5 1.5 0 0 0 4.5 18h7a1.5 1.5 0 0 0 1.5-1.5v-5.879a1.5 1.5 0 0 0-.44-1.06L9.44 6.439A1.5 1.5 0 0 0 8.378 6H4.5Z"/></svg>
+              </button>
+            </td>
             <td class="flex gap-2 py-2">
               <%= button_to "Accept", accept_invitation_bot_path(bot, group_id: inv[:id]), method: :post,
                 class: "rounded px-3 py-1 text-xs font-medium text-success border border-success/30 hover:bg-success/10" %>

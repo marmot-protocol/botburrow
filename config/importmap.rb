@@ -17,3 +17,4 @@ pin "@lezer/common", to: "@lezer--common.js" # @1.5.1
 pin "@lezer/highlight", to: "@lezer--highlight.js" # @1.2.3
 pin "@codemirror/commands", to: "@codemirror--commands.js" # @6.10.3
 pin "@codemirror/legacy-modes/mode/ruby", to: "@codemirror--legacy-modes--mode--ruby.js" # @6.5.2
+pin "@rails/actioncable", to: "@rails--actioncable.js" # @8.1.300

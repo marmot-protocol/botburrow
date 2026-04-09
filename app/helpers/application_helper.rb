@@ -18,6 +18,17 @@ module ApplicationHelper
     STATUS_COLORS[status] || "text-text-muted"
   end
 
+  def back_link(text, path)
+    arrow = content_tag(:svg, content_tag(:path, nil,
+      "fill-rule": "evenodd", "clip-rule": "evenodd",
+      d: "M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z"
+    ), class: "h-4 w-4", viewBox: "0 0 20 20", fill: "currentColor")
+
+    link_to(path, class: "mb-2 inline-flex items-center gap-1 text-sm text-text-muted hover:text-text transition-colors") do
+      safe_join([arrow, text])
+    end
+  end
+
   def bot_avatar(bot, size: 10)
     px = { 10 => "h-10 w-10 text-sm", 12 => "h-12 w-12 text-lg" }[size] || "h-10 w-10 text-sm"
 

@@ -21,16 +21,16 @@
             <td class="px-4 py-3"><%= command.name %></td>
             <td class="px-4 py-3 font-mono text-xs"><%= command.pattern %></td>
             <td class="px-4 py-3">
-              <span class="<%= command.enabled? ? 'text-success' : 'text-text-faint' %>">
-                <%= command.enabled? ? "Yes" : "No" %>
-              </span>
+              <%= render "shared/toggle_enabled", record: command, url: toggle_enabled_bot_command_path(bot, command) %>
             </td>
-            <td class="flex gap-2 px-4 py-3">
-              <%= link_to "Edit", edit_bot_command_path(bot, command),
-                class: "text-xs text-primary hover:text-primary-hover" %>
-              <%= button_to "Delete", bot_command_path(bot, command), method: :delete,
-                data: { turbo_confirm: "Are you sure?" },
-                class: "text-xs text-danger hover:text-danger-hover" %>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-3">
+                <%= link_to "Edit", edit_bot_command_path(bot, command),
+                  class: "text-xs text-primary hover:text-primary-hover" %>
+                <%= link_to "Delete", bot_command_path(bot, command),
+                  data: { turbo_method: :delete, turbo_confirm: "Are you sure?" },
+                  class: "text-xs text-danger hover:text-danger-hover" %>
+              </div>
             </td>
           </tr>
         <% end %>
@@ -38,5 +38,9 @@
     </table>
   </div>
 <% else %>
-  <p class="rounded-lg border border-border bg-surface-raised p-6 text-center text-sm text-text-faint">No commands yet.</p>
+  <div class="rounded-lg border border-border bg-surface-raised p-8 text-center">
+    <p class="text-text-muted mb-4">No commands yet. Commands let your bot respond to specific patterns.</p>
+    <%= link_to "Create a command", new_bot_command_path(bot),
+      class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors" %>
+  </div>
 <% end %>
