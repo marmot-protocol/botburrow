@@ -1,0 +1,11 @@
+<%# locals: (message:, bot_npub:, author_names: {}) -%>
+<% is_bot = message.author == bot_npub %>
+<div data-chat-role="message" data-chat-group="<%= message.group_id %>" class="flex <%= is_bot ? 'justify-end' : 'justify-start' %>">
+  <div class="max-w-[75%] rounded-lg px-3 py-2 text-sm <%= is_bot ? 'bg-primary/10 text-text' : 'bg-surface-overlay text-text' %>">
+    <% unless is_bot %>
+      <p class="text-xs font-medium text-text-muted mb-1"><%= author_names[message.author] || truncate(message.author, length: 16) %></p>
+    <% end %>
+    <p class="whitespace-pre-wrap break-words"><%= message.content %></p>
+    <p class="text-xs text-text-faint mt-1"><%= message.message_at.to_fs(:short) %></p>
+  </div>
+</div>

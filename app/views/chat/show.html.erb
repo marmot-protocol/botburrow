@@ -1,0 +1,62 @@
+<%= turbo_stream_from @bot %>
+<%= back_link @bot.name, bot_path(@bot) %>
+
+<% if @group_id.present? %>
+  <%# Chat view for selected group %>
+  <div class="flex items-center gap-3 mb-4">
+    <%= link_to bot_chat_path(@bot), class: "text-text-muted hover:text-text transition-colors" do %>
+      <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clip-rule="evenodd" /></svg>
+    <% end %>
+    <h1 class="text-xl font-semibold"><%= @group_name %></h1>
+  </div>
+
+  <div class="rounded-lg border border-border bg-surface-raised flex flex-col" style="height: 65vh;">
+    <div id="chat_messages" data-controller="chat-scroll" class="flex-1 overflow-y-auto p-4 space-y-3">
+      <% if @messages.any? %>
+        <% @messages.each do |msg| %>
+          <%= render "chat/message", message: msg, bot_npub: @bot.npub, author_names: @author_names %>
+        <% end %>
+      <% else %>
+        <p class="text-center text-sm text-text-faint py-8">No messages yet in this group.</p>
+      <% end %>
+    </div>
+
+    <div class="border-t border-border p-3">
+      <%= form_with url: bot_chat_path(@bot), method: :post, class: "flex gap-2" do |form| %>
+        <%= form.hidden_field :group_id, value: @group_id %>
+        <%= form.text_field :message, placeholder: "Type a message...", required: true, autocomplete: "off",
+          class: "flex-1 rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+        <%= form.submit "Send",
+          class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors cursor-pointer" %>
+      <% end %>
+    </div>
+  </div>
+
+<% else %>
+  <%# Group selection cards %>
+  <h1 class="text-xl font-semibold mb-6">Chat</h1>
+
+  <% if @groups.any? %>
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <% @groups.each do |group| %>
+        <%= link_to bot_chat_path(@bot, group_id: group[:id]),
+          class: "rounded-lg border border-border bg-surface-raised p-4 hover:border-primary/50 hover:bg-surface-overlay transition-colors" do %>
+          <div class="flex items-start justify-between mb-2">
+            <h3 class="font-medium text-text truncate"><%= group[:name] %></h3>
+            <span class="ml-2 shrink-0 text-xs text-text-faint"><%= group[:members] %> members</span>
+          </div>
+          <% if group[:last_message] %>
+            <p class="text-sm text-text-muted truncate mb-2"><%= group[:last_message] %></p>
+            <p class="text-xs text-text-faint"><%= time_ago_in_words(group[:last_message_at]) %> ago</p>
+          <% else %>
+            <p class="text-sm text-text-faint">No messages yet</p>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="rounded-lg border border-border bg-surface-raised p-8 text-center">
+      <p class="text-text-muted">No groups found. Invite the bot to a group to start chatting.</p>
+    </div>
+  <% end %>
+<% end %>
