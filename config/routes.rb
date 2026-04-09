@@ -4,9 +4,16 @@ Rails.application.routes.draw do
   resource :setup, only: [ :new, :create ], controller: "setup"
 
   resources :bots do
-    resources :commands, except: [ :show ]
-    resources :triggers, except: [ :show ]
-    resources :scheduled_actions, except: [ :show ]
+    resources :commands, except: [ :show ] do
+      patch :toggle_enabled, on: :member
+    end
+    resources :triggers, except: [ :show ] do
+      patch :toggle_enabled, on: :member
+    end
+    resources :scheduled_actions, except: [ :show ] do
+      patch :toggle_enabled, on: :member
+    end
+    resource :chat, only: [ :show, :create ], controller: "chat"
     resources :message_logs, only: [ :index ], path: "logs"
     member do
       post :start

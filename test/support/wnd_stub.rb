@@ -42,6 +42,18 @@ class WndStubInstance
     @config[:responses][:daemon_status] || { "status" => "running" }
   end
 
+  def users_show(pubkey:)
+    record_call(:users_show, pubkey: pubkey)
+    maybe_raise(:users_show)
+    @config[:responses][:"users_show:#{pubkey}"] || @config[:responses][:users_show] || {}
+  end
+
+  def send_message(account:, group_id:, message:)
+    record_call(:send_message, account: account, group_id: group_id, message: message)
+    maybe_raise(:send_message)
+    "ok"
+  end
+
   def groups_list(account:)
     record_call(:groups_list, account: account)
     maybe_raise(:groups_list)

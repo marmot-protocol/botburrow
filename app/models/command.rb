@@ -1,12 +1,10 @@
 class Command < ApplicationRecord
   belongs_to :bot
 
-  enum :response_type, { script: 3 }, default: :script
-
   validates :name, presence: true
   validates :pattern, presence: true, uniqueness: { scope: :bot_id }
   validates :response_text, presence: true
-  validate :script_body_syntax, if: -> { script? && response_text.present? }
+  validate :script_body_syntax, if: -> { response_text.present? }
 
   normalizes :name, with: -> { _1.strip }
   normalizes :pattern, with: -> { _1.strip }
@@ -41,7 +39,6 @@ end
 #  name          :string           not null
 #  pattern       :string           not null
 #  response_text :text             not null
-#  response_type :integer          default("script"), not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  bot_id        :integer          not null

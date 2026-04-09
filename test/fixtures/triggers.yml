@@ -1,54 +1,50 @@
 keyword_trigger:
   bot: relay_bot
   name: Welcome keyword
-  event_type: 0
+
   condition_type: 0
   condition_value: hello
-  action_type: 0
-  action_config: '{"response_text": "Welcome to the group!"}'
+  script_body: '"Welcome to the group!"'
   position: 1
   enabled: true
 
 regex_trigger:
   bot: relay_bot
   name: Bug report regex
-  event_type: 0
+
   condition_type: 1
   condition_value: 'bug\s*#?\d+'
-  action_type: 0
-  action_config: '{"response_text": "Bug report noted."}'
+  script_body: '"Bug report noted."'
   position: 2
   enabled: true
 
 any_trigger:
   bot: relay_bot
   name: Catch all
-  event_type: 0
+
   condition_type: 2
   condition_value:
-  action_type: 2
+  script_body: 'nil'
   position: 3
   enabled: true
 
 disabled_trigger:
   bot: relay_bot
   name: Disabled trigger
-  event_type: 0
+
   condition_type: 0
   condition_value: secret
-  action_type: 0
-  action_config: '{"response_text": "You found a secret!"}'
+  script_body: '"You found a secret!"'
   position: 4
   enabled: false
 
 echo_trigger:
   bot: echo_bot
   name: Echo greeting
-  event_type: 0
+
   condition_type: 0
   condition_value: hi
-  action_type: 0
-  action_config: '{"response_text": "Hi there!"}'
+  script_body: '"Hi there!"'
   position: 1
   enabled: true
 
@@ -57,12 +53,9 @@ echo_trigger:
 # Table name: triggers
 #
 #  id              :integer          not null, primary key
-#  action_config   :text
-#  action_type     :integer          default("reply"), not null
 #  condition_type  :integer          default("keyword"), not null
 #  condition_value :string
 #  enabled         :boolean          default(TRUE), not null
-#  event_type      :integer          default("message_received"), not null
 #  name            :string           not null
 #  position        :integer
 #  script_body     :text

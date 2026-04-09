@@ -1,4 +1,5 @@
 require "test_helper"
+require_relative "../support/wnd_stub"
 
 class ScheduledActionsControllerTest < ActionDispatch::IntegrationTest
   setup do
@@ -6,6 +7,13 @@ class ScheduledActionsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as(@user)
     @bot = bots(:echo_bot)
     @action = scheduled_actions(:hourly_greeting)
+    @wnd_stub = WndStubFactory.new
+    @wnd_stub.stub_response(:groups_list, [])
+    ScheduledActionsController.wnd_client_class = @wnd_stub
+  end
+
+  teardown do
+    ScheduledActionsController.wnd_client_class = Wnd::Client
   end
 
   # -- Authentication --
@@ -28,25 +36,25 @@ class ScheduledActionsControllerTest < ActionDispatch::IntegrationTest
 
   # -- New / Create --
 
-  test "new scheduled action form renders" do
+  test "new form renders with script editor" do
     get new_bot_scheduled_action_path(@bot)
     assert_response :success
     assert_select "form" do
       assert_select "input[name='scheduled_action[name]']"
       assert_select "input[name='scheduled_action[schedule]']"
-      assert_select "textarea[name='scheduled_action[action_config]']"
+      assert_select "textarea[name='scheduled_action[script_body]']"
       assert_select "input[name='scheduled_action[enabled]']"
     end
   end
 
-  test "creating a scheduled action saves and redirects to bot" do
+  test "creating a scheduled action saves with multiple groups" do
     assert_difference "ScheduledAction.count", 1 do
       post bot_scheduled_actions_path(@bot), params: {
         scheduled_action: {
           name: "Morning greeting",
-          schedule: "every 1h",
-          action_type: "send_message",
-          action_config: '{"group_id": "g1", "message": "Hello!"}',
+          schedule: "0 * * * *",
+          group_ids: ["g1", "g2"],
+          script_body: '"Hello!"',
           enabled: "1"
         }
       }
@@ -54,77 +62,29 @@ class ScheduledActionsControllerTest < ActionDispatch::IntegrationTest
 
     action = ScheduledAction.last
     assert_equal "Morning greeting", action.name
-    assert_equal "every 1h", action.schedule
-    assert_equal "send_message", action.action_type
+    assert_equal ["g1", "g2"], action.group_ids
     assert action.enabled?
-    assert_equal @bot, action.bot
     assert_not_nil action.next_run_at
-    assert_redirected_to bot_path(@bot)
+    assert_redirected_to bot_path(@bot, anchor: "schedules")
   end
 
-  test "creating a scheduled action with invalid data re-renders form" do
+  test "creating with invalid data re-renders form" do
     assert_no_difference "ScheduledAction.count" do
       post bot_scheduled_actions_path(@bot), params: {
-        scheduled_action: { name: "", schedule: "", action_config: "" }
+        scheduled_action: { name: "", schedule: "", group_ids: [""], script_body: "" }
       }
     end
 
     assert_response :unprocessable_entity
   end
 
-  # -- Script scheduled actions --
-
-  test "creating a script scheduled action saves action_type and script_body" do
-    assert_difference "ScheduledAction.count", 1 do
-      post bot_scheduled_actions_path(@bot), params: {
-        scheduled_action: {
-          name: "Scripted greeting",
-          schedule: "every 1h",
-          action_type: "script",
-          action_config: '{"group_id": "g1"}',
-          script_body: '"Good morning!"',
-          enabled: "1"
-        }
-      }
-    end
-
-    action = ScheduledAction.last
-    assert_equal "Scripted greeting", action.name
-    assert_equal "script", action.action_type
-    assert_equal '"Good morning!"', action.script_body
-    assert_not_nil action.next_run_at
-    assert_redirected_to bot_path(@bot)
-  end
-
-  test "script scheduled action does not require message in action_config" do
-    assert_difference "ScheduledAction.count", 1 do
-      post bot_scheduled_actions_path(@bot), params: {
-        scheduled_action: {
-          name: "Script only group",
-          schedule: "every 1h",
-          action_type: "script",
-          action_config: '{"group_id": "g1"}',
-          script_body: '"Hello from script"',
-          enabled: "1"
-        }
-      }
-    end
-
-    action = ScheduledAction.last
-    config = action.parsed_action_config
-    assert_equal "g1", config["group_id"]
-    assert_nil config["message"]
-    assert_redirected_to bot_path(@bot)
-  end
-
-  test "creating a script scheduled action with invalid Ruby re-renders form" do
+  test "creating with invalid Ruby re-renders form" do
     assert_no_difference "ScheduledAction.count" do
       post bot_scheduled_actions_path(@bot), params: {
         scheduled_action: {
-          name: "Bad script action",
-          schedule: "every 1h",
-          action_type: "script",
-          action_config: '{"group_id": "g1"}',
+          name: "Bad script",
+          schedule: "0 * * * *",
+          group_ids: ["g1"],
           script_body: "def foo(",
           enabled: "1"
         }
@@ -142,18 +102,18 @@ class ScheduledActionsControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name='scheduled_action[name]'][value='#{@action.name}']"
   end
 
-  test "updating a scheduled action changes attributes" do
+  test "updating changes attributes" do
     patch bot_scheduled_action_path(@bot, @action), params: {
-      scheduled_action: { name: "Updated greeting", schedule: "every 2h" }
+      scheduled_action: { name: "Updated greeting", schedule: "0 */2 * * *" }
     }
 
-    assert_redirected_to bot_path(@bot)
+    assert_redirected_to bot_path(@bot, anchor: "schedules")
     @action.reload
     assert_equal "Updated greeting", @action.name
-    assert_equal "every 2h", @action.schedule
+    assert_equal "0 */2 * * *", @action.schedule
   end
 
-  test "updating a scheduled action with invalid data re-renders form" do
+  test "updating with invalid data re-renders form" do
     patch bot_scheduled_action_path(@bot, @action), params: {
       scheduled_action: { name: "" }
     }
@@ -161,13 +121,29 @@ class ScheduledActionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  # -- Toggle enabled --
+
+  test "toggle_enabled flips enabled to disabled" do
+    assert @action.enabled?
+    patch toggle_enabled_bot_scheduled_action_path(@bot, @action), as: :turbo_stream
+    assert_response :success
+    assert_not @action.reload.enabled?
+  end
+
+  test "toggle_enabled flips disabled to enabled" do
+    @action.update!(enabled: false)
+    patch toggle_enabled_bot_scheduled_action_path(@bot, @action), as: :turbo_stream
+    assert_response :success
+    assert @action.reload.enabled?
+  end
+
   # -- Destroy --
 
-  test "destroying a scheduled action deletes and redirects to bot" do
+  test "destroying deletes and redirects to bot" do
     assert_difference "ScheduledAction.count", -1 do
       delete bot_scheduled_action_path(@bot, @action)
     end
 
-    assert_redirected_to bot_path(@bot)
+    assert_redirected_to bot_path(@bot, anchor: "schedules")
   end
 end

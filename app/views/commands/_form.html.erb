@@ -32,7 +32,7 @@
 
       <div class="flex gap-3">
         <%= form.submit class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors cursor-pointer" %>
-        <%= link_to "Cancel", bot_path(bot),
+        <%= link_to "Cancel", bot_path(bot, anchor: "commands"),
           class: "rounded-md px-4 py-2 text-sm font-medium text-text-muted border border-border hover:bg-surface-overlay transition-colors" %>
       </div>
     </div>

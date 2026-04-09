@@ -1,5 +1,5 @@
 class BotsController < ApplicationController
-  class_attribute :wnd_client_class, default: Wnd::Client
+  include WndGroups
 
   before_action :set_bot, only: %i[show edit update destroy start stop accept_invitation decline_invitation]
 
@@ -9,7 +9,7 @@ class BotsController < ApplicationController
 
   def show
     sync_profile_picture(@bot)
-    @groups = fetch_bot_groups
+    @groups = fetch_bot_groups(@bot)
     @invitations = fetch_bot_invitations unless @bot.auto_accept_invitations?
     @logs = @bot.message_logs.recent.limit(100)
   end
@@ -97,46 +97,21 @@ class BotsController < ApplicationController
     params.expect(bot: [ :name, :description, :auto_accept_invitations, :picture_url ])
   end
 
-  def wnd_client
-    self.class.wnd_client_class.new
-  end
-
-  def fetch_bot_groups
-    result = wnd_client.groups_list(account: @bot.npub)
-    return [] unless result.is_a?(Array)
-
-    result.map do |entry|
-      group = entry["group"]
-      {
-        id: extract_group_id(group["mls_group_id"]),
-        name: group["name"].presence || "(unnamed)",
-        state: group["state"],
-        members: group["admin_pubkeys"]&.size || 0
-      }
-    end
-  rescue Wnd::Error => e
-    Rails.logger.error("[BotsController] Failed to fetch groups: #{e.message}")
-    []
-  end
-
   def fetch_bot_invitations
     result = wnd_client.groups_invites(account: @bot.npub)
     return [] unless result.is_a?(Array)
 
     result.map do |entry|
       group = entry["group"]
+      membership = entry["membership"] || {}
       {
         id: extract_group_id(group["mls_group_id"]),
-        name: group["name"].presence || "(unnamed)"
+        name: resolve_group_name(group, membership)
       }
     end
   rescue Wnd::Error => e
     Rails.logger.error("[BotsController] Failed to fetch invitations: #{e.message}")
     []
-  end
-
-  def extract_group_id(mls_group_id)
-    Wnd.extract_group_id(mls_group_id)
   end
 
   def sync_profile_picture(bot)

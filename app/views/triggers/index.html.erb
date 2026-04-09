@@ -10,9 +10,7 @@
       <thead>
         <tr class="border-b border-border text-left text-text-muted">
           <th class="px-4 py-3 font-medium">Name</th>
-          <th class="px-4 py-3 font-medium">Event</th>
           <th class="px-4 py-3 font-medium">Condition</th>
-          <th class="px-4 py-3 font-medium">Action</th>
           <th class="px-4 py-3 font-medium">Enabled</th>
           <th class="px-4 py-3 font-medium">Actions</th>
         </tr>
@@ -21,14 +19,12 @@
         <% @triggers.each do |trigger| %>
           <tr class="hover:bg-surface-overlay transition-colors">
             <td class="px-4 py-3"><%= trigger.name %></td>
-            <td class="px-4 py-3 text-text-muted"><%= trigger.event_type.humanize %></td>
             <td class="px-4 py-3">
               <%= trigger.condition_type.humanize %>
               <% if trigger.condition_value.present? %>
                 <span class="ml-1 font-mono text-xs text-text-faint"><%= trigger.condition_value %></span>
               <% end %>
             </td>
-            <td class="px-4 py-3 text-text-muted"><%= trigger.action_type.humanize %></td>
             <td class="px-4 py-3">
               <span class="<%= trigger.enabled? ? 'text-success' : 'text-text-faint' %>">
                 <%= trigger.enabled? ? "Yes" : "No" %>

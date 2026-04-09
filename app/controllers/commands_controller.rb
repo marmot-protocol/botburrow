@@ -1,6 +1,6 @@
 class CommandsController < ApplicationController
   before_action :set_bot
-  before_action :set_command, only: %i[edit update destroy]
+  before_action :set_command, only: %i[edit update destroy toggle_enabled]
 
   def new
     @command = @bot.commands.build(enabled: true)
@@ -10,7 +10,7 @@ class CommandsController < ApplicationController
     @command = @bot.commands.build(command_params)
 
     if @command.save
-      redirect_to @bot, notice: "Command was successfully created."
+      redirect_to bot_path(@bot, anchor: "commands"), notice: "Command was successfully created."
     else
       render :new, status: :unprocessable_entity
     end
@@ -21,15 +21,20 @@ class CommandsController < ApplicationController
 
   def update
     if @command.update(command_params)
-      redirect_to @bot, notice: "Command was successfully updated."
+      redirect_to bot_path(@bot, anchor: "commands"), notice: "Command was successfully updated."
     else
       render :edit, status: :unprocessable_entity
     end
   end
 
+  def toggle_enabled
+    @command.update!(enabled: !@command.enabled?)
+    render_toggle(@command, toggle_enabled_bot_command_path(@bot, @command))
+  end
+
   def destroy
     @command.destroy
-    redirect_to @bot, notice: "Command was successfully deleted.", status: :see_other
+    redirect_to bot_path(@bot, anchor: "commands"), notice: "Command was successfully deleted.", status: :see_other
   end
 
   private

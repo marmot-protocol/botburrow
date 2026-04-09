@@ -46,11 +46,11 @@ class MessageDispatcherTest < ActiveSupport::TestCase
     assert_includes response, "1"
   end
 
-  test "dispatches trigger reply when no command matches" do
+  test "trigger script sends reply when it returns a string" do
     @bot.triggers.create!(
-      name: "Hello", event_type: :message_received, condition_type: :keyword,
-      condition_value: "hello", action_type: :reply,
-      action_config: '{"response_text": "Hello back!"}', position: 1, enabled: true
+      name: "Hello", condition_type: :keyword,
+      condition_value: "hello", script_body: '"Hello back!"',
+      position: 1, enabled: true
     )
 
     dispatch(content: "hello world", author: "alice")
@@ -58,27 +58,10 @@ class MessageDispatcherTest < ActiveSupport::TestCase
     assert_sent "Hello back!"
   end
 
-  test "first matching trigger wins by position" do
+  test "trigger script returning nil sends nothing" do
     @bot.triggers.create!(
-      name: "Catch-all", event_type: :message_received, condition_type: :any,
-      action_type: :reply, action_config: '{"response_text": "Catch-all"}',
-      position: 2, enabled: true
-    )
-    @bot.triggers.create!(
-      name: "Hello", event_type: :message_received, condition_type: :keyword,
-      condition_value: "hello", action_type: :reply,
-      action_config: '{"response_text": "Hello first!"}', position: 1, enabled: true
-    )
-
-    dispatch(content: "hello there", author: "alice")
-
-    assert_sent "Hello first!"
-  end
-
-  test "log_only trigger does not send a reply" do
-    @bot.triggers.create!(
-      name: "Logger", event_type: :message_received, condition_type: :any,
-      action_type: :log_only, position: 1, enabled: true
+      name: "Silent", condition_type: :any,
+      script_body: "nil", position: 1, enabled: true
     )
 
     dispatch(content: "anything", author: "alice")
@@ -86,12 +69,27 @@ class MessageDispatcherTest < ActiveSupport::TestCase
     assert_nothing_sent
   end
 
+  test "first matching trigger wins by position" do
+    @bot.triggers.create!(
+      name: "Catch-all", condition_type: :any,
+      script_body: '"Catch-all"', position: 2, enabled: true
+    )
+    @bot.triggers.create!(
+      name: "Hello", condition_type: :keyword,
+      condition_value: "hello", script_body: '"Hello first!"',
+      position: 1, enabled: true
+    )
+
+    dispatch(content: "hello there", author: "alice")
+
+    assert_sent "Hello first!"
+  end
+
   test "commands take priority over triggers" do
     @bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
     @bot.triggers.create!(
-      name: "Catch-all", event_type: :message_received, condition_type: :any,
-      action_type: :reply, action_config: '{"response_text": "Caught!"}',
-      position: 1, enabled: true
+      name: "Catch-all", condition_type: :any,
+      script_body: '"Caught!"', position: 1, enabled: true
     )
 
     dispatch(content: "/ping", author: "alice")
@@ -132,7 +130,7 @@ class MessageDispatcherTest < ActiveSupport::TestCase
     @bot.commands.create!(
       name: "Hello", pattern: "/hello",
       response_text: '"Hello from script!"',
-      response_type: :script, enabled: true
+      enabled: true
     )
 
     dispatch(content: "/hello", author: "alice")
@@ -144,7 +142,7 @@ class MessageDispatcherTest < ActiveSupport::TestCase
     @bot.commands.create!(
       name: "Silent", pattern: "/silent",
       response_text: 'store["counter"] = 1; nil',
-      response_type: :script, enabled: true
+      enabled: true
     )
 
     dispatch(content: "/silent", author: "alice")
@@ -152,36 +150,11 @@ class MessageDispatcherTest < ActiveSupport::TestCase
     assert_nothing_sent
   end
 
-  test "script trigger returns a reply" do
-    @bot.triggers.create!(
-      name: "Script", event_type: :message_received, condition_type: :keyword,
-      condition_value: "hello", action_type: :script,
-      script_body: '"Hello from trigger script!"',
-      position: 1, enabled: true
-    )
-
-    dispatch(content: "hello world", author: "alice")
-
-    assert_sent "Hello from trigger script!"
-  end
-
-  test "existing reply trigger still works after refactor" do
-    @bot.triggers.create!(
-      name: "Hello", event_type: :message_received, condition_type: :keyword,
-      condition_value: "hello", action_type: :reply,
-      action_config: '{"response_text": "Hello back!"}', position: 1, enabled: true
-    )
-
-    dispatch(content: "hello world", author: "alice")
-
-    assert_sent "Hello back!"
-  end
-
   test "script command with send_message sends multiple messages" do
     @bot.commands.create!(
       name: "Multi", pattern: "/multi",
       response_text: 'send_message("first"); send_message("second"); "third"',
-      response_type: :script, enabled: true
+      enabled: true
     )
 
     dispatch(content: "/multi", author: "alice")
@@ -190,6 +163,20 @@ class MessageDispatcherTest < ActiveSupport::TestCase
     assert_equal "first", @wnd_calls[0][:message]
     assert_equal "second", @wnd_calls[1][:message]
     assert_equal "third", @wnd_calls[2][:message]
+  end
+
+  test "trigger script can use send_message for multi-message flows" do
+    @bot.triggers.create!(
+      name: "Multi", condition_type: :keyword,
+      condition_value: "multi", script_body: 'send_message("one"); "two"',
+      position: 1, enabled: true
+    )
+
+    dispatch(content: "multi test", author: "alice")
+
+    assert_equal 2, @wnd_calls.size
+    assert_equal "one", @wnd_calls[0][:message]
+    assert_equal "two", @wnd_calls[1][:message]
   end
 
   private

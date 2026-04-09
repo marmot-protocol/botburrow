@@ -1,9 +1,9 @@
 hourly_greeting:
   bot: echo_bot
   name: Hourly greeting
-  schedule: "every 1h"
-  action_type: 0
-  action_config: '{"group_id": "testgroup1", "message": "Good morning!"}'
+  schedule: "0 * * * *"
+  group_ids: '["testgroup1"]'
+  script_body: '"Good morning!"'
   enabled: true
   last_run_at: <%= 2.hours.ago.to_fs(:db) %>
   next_run_at: <%= 1.hour.ago.to_fs(:db) %>
@@ -11,9 +11,9 @@ hourly_greeting:
 daily_report:
   bot: relay_bot
   name: Daily report
-  schedule: "every 1d"
-  action_type: 0
-  action_config: '{"group_id": "testgroup2", "message": "Daily report summary"}'
+  schedule: "0 0 * * *"
+  group_ids: '["testgroup2"]'
+  script_body: '"Daily report summary"'
   enabled: true
   last_run_at:
   next_run_at: <%= 1.day.from_now.to_fs(:db) %>
@@ -21,9 +21,9 @@ daily_report:
 disabled_action:
   bot: relay_bot
   name: Disabled action
-  schedule: "every 30m"
-  action_type: 0
-  action_config: '{"group_id": "testgroup3", "message": "Should not fire"}'
+  schedule: "*/30 * * * *"
+  group_ids: '["testgroup3"]'
+  script_body: '"Should not fire"'
   enabled: false
   last_run_at:
   next_run_at: <%= 1.hour.ago.to_fs(:db) %>
@@ -32,18 +32,17 @@ disabled_action:
 #
 # Table name: scheduled_actions
 #
-#  id            :integer          not null, primary key
-#  action_config :text             not null
-#  action_type   :integer          default("send_message"), not null
-#  enabled       :boolean          default(TRUE), not null
-#  last_run_at   :datetime
-#  name          :string           not null
-#  next_run_at   :datetime
-#  schedule      :string           not null
-#  script_body   :text
-#  created_at    :datetime         not null
-#  updated_at    :datetime         not null
-#  bot_id        :integer          not null
+#  id          :integer          not null, primary key
+#  enabled     :boolean          default(TRUE), not null
+#  group_ids   :string
+#  last_run_at :datetime
+#  name        :string           not null
+#  next_run_at :datetime
+#  schedule    :string           not null
+#  script_body :text
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#  bot_id      :integer          not null
 #
 # Indexes
 #

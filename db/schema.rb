@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_07_230446) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_09_202812) do
   create_table "bots", force: :cascade do |t|
     t.boolean "auto_accept_invitations", default: true, null: false
     t.datetime "created_at", null: false
@@ -32,7 +32,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_07_230446) do
     t.string "name", null: false
     t.string "pattern", null: false
     t.text "response_text", null: false
-    t.integer "response_type", default: 3, null: false
     t.datetime "updated_at", null: false
     t.index ["bot_id", "pattern"], name: "index_commands_on_bot_id_and_pattern", unique: true
     t.index ["bot_id"], name: "index_commands_on_bot_id"
@@ -53,11 +52,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_07_230446) do
   end
 
   create_table "scheduled_actions", force: :cascade do |t|
-    t.text "action_config", null: false
-    t.integer "action_type", default: 0, null: false
     t.integer "bot_id", null: false
     t.datetime "created_at", null: false
     t.boolean "enabled", default: true, null: false
+    t.string "group_ids"
     t.datetime "last_run_at"
     t.string "name", null: false
     t.datetime "next_run_at"
@@ -85,14 +83,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_07_230446) do
   end
 
   create_table "triggers", force: :cascade do |t|
-    t.text "action_config"
-    t.integer "action_type", default: 0, null: false
     t.integer "bot_id", null: false
     t.integer "condition_type", default: 0, null: false
     t.string "condition_value"
     t.datetime "created_at", null: false
     t.boolean "enabled", default: true, null: false
-    t.integer "event_type", default: 0, null: false
     t.string "name", null: false
     t.integer "position"
     t.text "script_body"

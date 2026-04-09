@@ -28,18 +28,19 @@ class TriggersControllerTest < ActionDispatch::IntegrationTest
 
   # -- New / Create --
 
-  test "new trigger form renders" do
+  test "new trigger form renders with script editor" do
     get new_bot_trigger_path(@bot)
     assert_response :success
     assert_select "form" do
       assert_select "input[name='trigger[name]']"
-      assert_select "select[name='trigger[event_type]']"
       assert_select "select[name='trigger[condition_type]']"
       assert_select "input[name='trigger[condition_value]']"
-      assert_select "select[name='trigger[action_type]']"
-      assert_select "textarea[name='trigger[action_config]']"
+      assert_select "textarea[name='trigger[script_body]']"
       assert_select "input[name='trigger[enabled]']"
     end
+    # action_type and action_config should no longer exist
+    assert_select "select[name='trigger[action_type]']", count: 0
+    assert_select "textarea[name='trigger[action_config]']", count: 0
   end
 
   test "creating a trigger saves and redirects to bot" do
@@ -47,11 +48,9 @@ class TriggersControllerTest < ActionDispatch::IntegrationTest
       post bot_triggers_path(@bot), params: {
         trigger: {
           name: "New keyword trigger",
-          event_type: "message_received",
           condition_type: "keyword",
           condition_value: "test",
-          action_type: "reply",
-          action_config: '{"response_text": "Testing!"}',
+          script_body: '"Testing!"',
           enabled: "1"
         }
       }
@@ -61,55 +60,29 @@ class TriggersControllerTest < ActionDispatch::IntegrationTest
     assert_equal "New keyword trigger", trigger.name
     assert_equal "keyword", trigger.condition_type
     assert_equal "test", trigger.condition_value
-    assert_equal "reply", trigger.action_type
+    assert_equal '"Testing!"', trigger.script_body
     assert trigger.enabled?
     assert_equal @bot, trigger.bot
-    assert_redirected_to bot_path(@bot)
+    assert_redirected_to bot_path(@bot, anchor: "triggers")
   end
 
   test "creating a trigger with invalid data re-renders form" do
     assert_no_difference "Trigger.count" do
       post bot_triggers_path(@bot), params: {
-        trigger: { name: "", condition_type: "keyword", condition_value: "" }
+        trigger: { name: "", condition_type: "keyword", condition_value: "", script_body: "" }
       }
     end
 
     assert_response :unprocessable_entity
   end
 
-  # -- Script triggers --
-
-  test "creating a script trigger saves action_type and script_body" do
-    assert_difference "Trigger.count", 1 do
-      post bot_triggers_path(@bot), params: {
-        trigger: {
-          name: "Script responder",
-          event_type: "message_received",
-          condition_type: "keyword",
-          condition_value: "flip",
-          action_type: "script",
-          script_body: "%w[Heads Tails].sample",
-          enabled: "1"
-        }
-      }
-    end
-
-    trigger = Trigger.last
-    assert_equal "Script responder", trigger.name
-    assert_equal "script", trigger.action_type
-    assert_equal "%w[Heads Tails].sample", trigger.script_body
-    assert_redirected_to bot_path(@bot)
-  end
-
-  test "creating a script trigger with missing script_body re-renders form" do
+  test "creating a trigger with missing script_body re-renders form" do
     assert_no_difference "Trigger.count" do
       post bot_triggers_path(@bot), params: {
         trigger: {
           name: "No body",
-          event_type: "message_received",
           condition_type: "keyword",
           condition_value: "test",
-          action_type: "script",
           script_body: "",
           enabled: "1"
         }
@@ -119,15 +92,13 @@ class TriggersControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  test "creating a script trigger with invalid Ruby re-renders form with syntax error" do
+  test "creating a trigger with invalid Ruby re-renders form" do
     assert_no_difference "Trigger.count" do
       post bot_triggers_path(@bot), params: {
         trigger: {
-          name: "Bad script trigger",
-          event_type: "message_received",
+          name: "Bad script",
           condition_type: "keyword",
           condition_value: "test",
-          action_type: "script",
           script_body: "def foo(",
           enabled: "1"
         }
@@ -150,7 +121,7 @@ class TriggersControllerTest < ActionDispatch::IntegrationTest
       trigger: { name: "Updated trigger", condition_value: "updated" }
     }
 
-    assert_redirected_to bot_path(@bot)
+    assert_redirected_to bot_path(@bot, anchor: "triggers")
     @trigger.reload
     assert_equal "Updated trigger", @trigger.name
     assert_equal "updated", @trigger.condition_value
@@ -164,6 +135,22 @@ class TriggersControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  # -- Toggle enabled --
+
+  test "toggle_enabled flips enabled to disabled" do
+    assert @trigger.enabled?
+    patch toggle_enabled_bot_trigger_path(@bot, @trigger), as: :turbo_stream
+    assert_response :success
+    assert_not @trigger.reload.enabled?
+  end
+
+  test "toggle_enabled flips disabled to enabled" do
+    @trigger.update!(enabled: false)
+    patch toggle_enabled_bot_trigger_path(@bot, @trigger), as: :turbo_stream
+    assert_response :success
+    assert @trigger.reload.enabled?
+  end
+
   # -- Destroy --
 
   test "destroying a trigger deletes and redirects to bot" do
@@ -171,6 +158,6 @@ class TriggersControllerTest < ActionDispatch::IntegrationTest
       delete bot_trigger_path(@bot, @trigger)
     end
 
-    assert_redirected_to bot_path(@bot)
+    assert_redirected_to bot_path(@bot, anchor: "triggers")
   end
 end

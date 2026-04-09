@@ -232,7 +232,7 @@ class BotsControllerTest < ActionDispatch::IntegrationTest
 
     get bot_path(@relay_bot)
     assert_response :success
-    assert_select "p", "Not a member of any groups yet."
+    assert_select "p", /Not a member of any groups yet/
   end
 
   test "show handles wnd error when fetching groups" do
@@ -240,7 +240,52 @@ class BotsControllerTest < ActionDispatch::IntegrationTest
 
     get bot_path(@relay_bot)
     assert_response :success
-    assert_select "p", "Not a member of any groups yet."
+    assert_select "p", /Not a member of any groups yet/
+  end
+
+  test "show resolves DM peer display name from user metadata" do
+    peer_hex = "ab" * 32
+    @wnd.stub_response(:groups_list, [
+      {
+        "group" => {
+          "mls_group_id" => "string-id-456",
+          "name" => "",
+          "state" => "active"
+        },
+        "membership" => {
+          "dm_peer_pubkey" => peer_hex
+        }
+      }
+    ])
+    @wnd.stub_response(:"users_show:#{peer_hex}", {
+      "metadata" => { "display_name" => "Alice", "name" => "alice" }
+    })
+
+    get bot_path(@relay_bot)
+    assert_response :success
+    assert_select "td", "Alice"
+  end
+
+  test "show falls back to truncated npub when DM peer has no metadata" do
+    peer_hex = "cd" * 32
+    @wnd.stub_response(:groups_list, [
+      {
+        "group" => {
+          "mls_group_id" => "string-id-789",
+          "name" => "",
+          "state" => "active"
+        },
+        "membership" => {
+          "dm_peer_pubkey" => peer_hex
+        }
+      }
+    ])
+    @wnd.stub_response(:"users_show:#{peer_hex}", {})
+
+    get bot_path(@relay_bot)
+    assert_response :success
+    npub = Wnd::Nostr.to_npub(peer_hex)
+    assert_select "td", "#{npub.first(16)}..."
   end
 
   test "show displays unnamed group as (unnamed)" do

@@ -1,5 +1,6 @@
-<h1 class="mb-6 text-xl font-semibold">New scheduled action for <%= @bot.name %></h1>
+<%= back_link @bot.name, bot_path(@bot, anchor: "schedules") %>
+<h1 class="mb-6 text-xl font-semibold">New scheduled action</h1>
 
 <div class="max-w-6xl rounded-lg border border-border bg-surface-raised p-6">
-  <%= render "form", bot: @bot, scheduled_action: @scheduled_action %>
+  <%= render "form", bot: @bot, scheduled_action: @scheduled_action, groups: @groups %>
 </div>

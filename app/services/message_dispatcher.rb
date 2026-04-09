@@ -25,7 +25,7 @@ class MessageDispatcher
       return
     end
 
-    triggers = @bot.triggers.enabled.where(event_type: :message_received).order(:position).to_a
+    triggers = @bot.triggers.enabled.order(:position).to_a
     matched_trigger = triggers.find { |t| t.matches?(content) }
     execute_trigger(matched_trigger, content: content, author: author) if matched_trigger
   end
@@ -72,21 +72,13 @@ class MessageDispatcher
   end
 
   def execute_trigger(trigger, content:, author:)
-    case trigger.action_type
-    when "reply"
-      response = trigger.parsed_action_config["response_text"]
-      send_reply(response) if response.present?
-    when "log_only"
-      Rails.logger.info("[MessageDispatcher] Log-only trigger '#{trigger.name}' in group #{@group_id}")
-    when "script"
-      context = ScriptContext.new(
-        bot: @bot, group_id: @group_id,
-        author: author, message: content, args: nil,
-        sender: method(:send_reply)
-      )
-      response = ScriptRunner.execute(trigger.script_body, context, bot: @bot, group_id: @group_id)
-      send_reply(response) if response.present?
-    end
+    context = ScriptContext.new(
+      bot: @bot, group_id: @group_id,
+      author: author, message: content, args: nil,
+      sender: method(:send_reply)
+    )
+    response = ScriptRunner.execute(trigger.script_body, context, bot: @bot, group_id: @group_id)
+    send_reply(response) if response.present?
   end
 
   def send_reply(message)

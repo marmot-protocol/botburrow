@@ -59,7 +59,6 @@ class BotListenerE2eTest < E2eTestCase
       name: "Coin Flip",
       pattern: "/flip",
       response_text: "%w[Heads Tails].sample",
-      response_type: :script,
       enabled: true
     )
 

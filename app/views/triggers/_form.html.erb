@@ -8,46 +8,34 @@
   </div>
 <% end %>
 
-<%= form_with model: [bot, trigger], data: { controller: "response-type" } do |form| %>
-  <div class="<%= 'grid lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-6' if trigger.script? %>">
+<%= form_with model: [bot, trigger] do |form| %>
+  <div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] gap-6">
     <%# Left column: form fields %>
-    <div class="space-y-4" data-response-type-target="formPanel">
+    <div class="space-y-4">
       <div>
         <%= form.label :name, class: "block text-sm font-medium text-text-muted mb-1" %>
         <%= form.text_field :name, required: true, placeholder: "Welcome message",
           class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
       </div>
 
-      <div>
-        <%= form.label :event_type, class: "block text-sm font-medium text-text-muted mb-1" %>
-        <%= form.select :event_type, Trigger.event_types.keys.map { |k| [k.humanize, k] },
-          {}, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
-      </div>
+      <div data-controller="conditional-field"
+           data-conditional-field-hide-when-value="any"
+           data-conditional-field-show-when-value="regex">
+        <div>
+          <%= form.label :condition_type, class: "block text-sm font-medium text-text-muted mb-1" %>
+          <%= form.select :condition_type, Trigger.condition_types.keys.map { |k| [k.humanize, k] },
+            {}, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary",
+            data: { conditional_field_target: "select", action: "conditional-field#toggle" } %>
+        </div>
 
-      <div>
-        <%= form.label :condition_type, class: "block text-sm font-medium text-text-muted mb-1" %>
-        <%= form.select :condition_type, Trigger.condition_types.keys.map { |k| [k.humanize, k] },
-          {}, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
-      </div>
-
-      <div>
-        <%= form.label :condition_value, class: "block text-sm font-medium text-text-muted mb-1" %>
-        <%= form.text_field :condition_value, placeholder: "hello",
-          class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
-        <p class="mt-1 text-xs text-text-faint">Leave blank for "any" condition type.</p>
-      </div>
-
-      <div>
-        <%= form.label :action_type, class: "block text-sm font-medium text-text-muted mb-1" %>
-        <%= form.select :action_type, Trigger.action_types.keys.map { |k| [k.humanize, k] },
-          {}, class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary",
-          data: { response_type_target: "select", action: "response-type#toggle" } %>
-      </div>
-
-      <div data-response-type-target="standardField" class="<%= 'hidden' if trigger.script? %>">
-        <%= form.label :action_config, "Action config (JSON)", class: "block text-sm font-medium text-text-muted mb-1" %>
-        <%= form.text_area :action_config, rows: 3, placeholder: '{"response_text": "Hello!"}',
-          class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm font-mono text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+        <div class="mt-4 <%= 'hidden' if trigger.any? %>" data-conditional-field-target="field">
+          <%= form.label :condition_value, class: "block text-sm font-medium text-text-muted mb-1" %>
+          <%= form.text_field :condition_value, placeholder: "hello",
+            class: "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-faint focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" %>
+          <p class="mt-1 text-xs text-text-faint <%= 'hidden' unless trigger.regex? %>" data-conditional-field-target="show">
+            Ruby regex syntax. Example: <code class="text-primary">bug\s*#?\d+</code> matches "bug #123", "bug42"
+          </p>
+        </div>
       </div>
 
       <div class="flex items-center gap-2">
@@ -57,13 +45,13 @@
 
       <div class="flex gap-3">
         <%= form.submit class: "rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover transition-colors cursor-pointer" %>
-        <%= link_to "Cancel", bot_path(bot),
+        <%= link_to "Cancel", bot_path(bot, anchor: "triggers"),
           class: "rounded-md px-4 py-2 text-sm font-medium text-text-muted border border-border hover:bg-surface-overlay transition-colors" %>
       </div>
     </div>
 
-    <%# Right column: script editor (hidden unless script type) %>
-    <div data-response-type-target="editorPanel" class="<%= 'hidden' unless trigger.script? %>">
+    <%# Right column: script editor %>
+    <div>
       <%= render "shared/script_editor", form: form, field_name: :script_body %>
     </div>
   </div>

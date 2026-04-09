@@ -204,11 +204,9 @@ class BotListenerTest < ActiveSupport::TestCase
     bot.commands.create!(name: "Ping", pattern: "/ping", response_text: '"pong!"', enabled: true)
     bot.triggers.create!(
       name: "Hello trigger",
-      event_type: :message_received,
       condition_type: :keyword,
       condition_value: "hello",
-      action_type: :reply,
-      action_config: '{"response_text": "Hello back!"}',
+      script_body: '"Hello back!"',
       position: 1,
       enabled: true
     )
@@ -245,21 +243,17 @@ class BotListenerTest < ActiveSupport::TestCase
     bot = Bot.create!(name: "OrderBot", npub: npub, status: :stopped)
     bot.triggers.create!(
       name: "Catch-all",
-      event_type: :message_received,
       condition_type: :any,
       condition_value: nil,
-      action_type: :reply,
-      action_config: '{"response_text": "Catch-all response"}',
+      script_body: '"Catch-all response"',
       position: 2,
       enabled: true
     )
     bot.triggers.create!(
       name: "Hello trigger",
-      event_type: :message_received,
       condition_type: :keyword,
       condition_value: "hello",
-      action_type: :reply,
-      action_config: '{"response_text": "Hello first!"}',
+      script_body: '"Hello first!"',
       position: 1,
       enabled: true
     )
@@ -292,11 +286,9 @@ class BotListenerTest < ActiveSupport::TestCase
     bot = Bot.create!(name: "DisabledBot", npub: npub, status: :stopped)
     bot.triggers.create!(
       name: "Disabled hello",
-      event_type: :message_received,
       condition_type: :keyword,
       condition_value: "hello",
-      action_type: :reply,
-      action_config: '{"response_text": "Should not fire"}',
+      script_body: '"Should not fire"',
       position: 1,
       enabled: false
     )
@@ -320,16 +312,15 @@ class BotListenerTest < ActiveSupport::TestCase
     assert_empty @wnd.calls_for(:send_message)
   end
 
-  test "log_only trigger does not send a reply" do
+  test "trigger returning nil does not send a reply" do
     npub = SecureRandom.hex(32)
     group_id = "loggroup"
     bot = Bot.create!(name: "LogBot", npub: npub, status: :stopped)
     bot.triggers.create!(
-      name: "Log everything",
-      event_type: :message_received,
+      name: "Silent observer",
       condition_type: :any,
       condition_value: nil,
-      action_type: :log_only,
+      script_body: "nil",
       position: 1,
       enabled: true
     )
@@ -519,11 +510,9 @@ class BotListenerTest < ActiveSupport::TestCase
     bot = Bot.create!(name: "TrigLogBot", npub: npub, status: :stopped)
     bot.triggers.create!(
       name: "Hello",
-      event_type: :message_received,
       condition_type: :keyword,
       condition_value: "hello",
-      action_type: :reply,
-      action_config: '{"response_text": "Hello back!"}',
+      script_body: '"Hello back!"',
       position: 1,
       enabled: true
     )

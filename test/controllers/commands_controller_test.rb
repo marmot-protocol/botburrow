@@ -42,7 +42,7 @@ class CommandsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "All systems go", command.response_text
     assert command.enabled?
     assert_equal @bot, command.bot
-    assert_redirected_to bot_path(@bot)
+    assert_redirected_to bot_path(@bot, anchor: "commands")
   end
 
   test "creating a command with invalid data re-renders form" do
@@ -78,7 +78,7 @@ class CommandsControllerTest < ActionDispatch::IntegrationTest
       command: { name: "Updated Ping", response_text: "updated pong!" }
     }
 
-    assert_redirected_to bot_path(@bot)
+    assert_redirected_to bot_path(@bot, anchor: "commands")
     @command.reload
     assert_equal "Updated Ping", @command.name
     assert_equal "updated pong!", @command.response_text
@@ -92,41 +92,37 @@ class CommandsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  # -- Script commands --
+  # -- Script validation --
 
-  test "creating a script command saves response_type and script body" do
-    assert_difference "Command.count", 1 do
-      post bot_commands_path(@bot), params: {
-        command: {
-          name: "Coin Flip",
-          pattern: "/flip",
-          response_text: "%w[Heads Tails].sample",
-          response_type: "script",
-          enabled: "1"
-        }
-      }
-    end
-
-    command = Command.last
-    assert_equal "script", command.response_type
-    assert_equal "%w[Heads Tails].sample", command.response_text
-    assert_redirected_to bot_path(@bot)
-  end
-
-  test "creating a script command with invalid Ruby re-renders form with syntax error" do
+  test "creating a command with invalid Ruby re-renders form" do
     assert_no_difference "Command.count" do
       post bot_commands_path(@bot), params: {
         command: {
           name: "Bad Script",
           pattern: "/bad",
           response_text: "def foo(",
-          response_type: "script",
           enabled: "1"
         }
       }
     end
 
     assert_response :unprocessable_entity
+  end
+
+  # -- Toggle enabled --
+
+  test "toggle_enabled flips enabled to disabled" do
+    assert @command.enabled?
+    patch toggle_enabled_bot_command_path(@bot, @command), as: :turbo_stream
+    assert_response :success
+    assert_not @command.reload.enabled?
+  end
+
+  test "toggle_enabled flips disabled to enabled" do
+    @command.update!(enabled: false)
+    patch toggle_enabled_bot_command_path(@bot, @command), as: :turbo_stream
+    assert_response :success
+    assert @command.reload.enabled?
   end
 
   # -- Destroy --
@@ -136,6 +132,6 @@ class CommandsControllerTest < ActionDispatch::IntegrationTest
       delete bot_command_path(@bot, @command)
     end
 
-    assert_redirected_to bot_path(@bot)
+    assert_redirected_to bot_path(@bot, anchor: "commands")
   end
 end

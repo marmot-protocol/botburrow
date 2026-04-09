@@ -106,26 +106,20 @@ class CommandTest < ActiveSupport::TestCase
     assert_equal "world", command.extract_args("/PING world")
   end
 
-  # -- Response types --
+  # -- Script validation --
 
-  test "command defaults to script response_type" do
-    command = Command.new(bot: bots(:relay_bot), name: "T", pattern: "/t", response_text: "test")
-    assert_equal "script", command.response_type
-  end
-
-  test "command supports script response_type" do
+  test "command with valid Ruby saves" do
     command = Command.new(
       bot: bots(:relay_bot), name: "Weather", pattern: "/weather",
-      response_text: '"Hello from script"', response_type: :script
+      response_text: '"Hello from script"'
     )
     assert command.valid?
-    assert command.script?
   end
 
-  test "command with script type and invalid Ruby fails validation" do
+  test "command with invalid Ruby fails validation" do
     command = Command.new(
       bot: bots(:relay_bot), name: "Bad", pattern: "/bad",
-      response_text: "def foo(", response_type: :script
+      response_text: "def foo("
     )
     assert_not command.valid?
     assert command.errors[:response_text].any? { |e| e.include?("syntax error") }
@@ -141,7 +135,6 @@ end
 #  name          :string           not null
 #  pattern       :string           not null
 #  response_text :text             not null
-#  response_type :integer          default("script"), not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  bot_id        :integer          not null
