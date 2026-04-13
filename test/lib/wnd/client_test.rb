@@ -141,6 +141,18 @@ class Wnd::ClientTest < ActiveSupport::TestCase
     @client.groups_accept(account: "npub1abc", group_id: "group123")
   end
 
+  test "group_members sends correct method name and params" do
+    @server.on_request do |req|
+      assert_equal "group_members", req["method"]
+      assert_equal "npub1abc", req["params"]["account"]
+      assert_equal "group123", req["params"]["group_id"]
+      { "result" => [ { "pubkey" => "abc" }, { "pubkey" => "def" } ] }
+    end
+
+    result = @client.group_members(account: "npub1abc", group_id: "group123")
+    assert_equal 2, result.size
+  end
+
   test "send_message sends all params" do
     @server.on_request do |req|
       assert_equal "send_message", req["method"]

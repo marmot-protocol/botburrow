@@ -57,6 +57,17 @@ class ScriptContextTest < ActiveSupport::TestCase
     assert_includes error.message, "at_exit is not available"
   end
 
+  test "wnd is nil by default" do
+    ctx = build_context
+    assert_nil ctx.wnd
+  end
+
+  test "wnd is exposed as a reader when provided" do
+    fake_wnd = Object.new
+    ctx = build_context(wnd: fake_wnd)
+    assert_equal fake_wnd, ctx.wnd
+  end
+
   test "does not expose bot as attr_reader" do
     ctx = build_context
     assert_not ctx.respond_to?(:bot)

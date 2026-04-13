@@ -36,6 +36,10 @@ module Wnd
       request("logout", pubkey: pubkey)
     end
 
+    def group_members(account:, group_id:)
+      request("group_members", account: account, group_id: group_id)
+    end
+
     def groups_invites(account:)
       request("group_invites", account: account)
     end

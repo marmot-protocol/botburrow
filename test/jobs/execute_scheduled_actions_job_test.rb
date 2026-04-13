@@ -9,10 +9,7 @@ class ExecuteScheduledActionsJobTest < ActiveSupport::TestCase
 
   test "executes due actions for running bots" do
     wnd_calls = []
-    stub_wnd = Class.new do
-      define_method(:initialize) { |**_| }
-      define_method(:send_message) { |**kwargs| wnd_calls << kwargs }
-    end
+    stub_wnd = build_stub_wnd(wnd_calls)
 
     ExecuteScheduledActionsJob.perform_now(wnd_class: stub_wnd)
 
@@ -31,10 +28,7 @@ class ExecuteScheduledActionsJobTest < ActiveSupport::TestCase
     action.update_columns(next_run_at: 1.hour.ago)
 
     wnd_calls = []
-    stub_wnd = Class.new do
-      define_method(:initialize) { |**_| }
-      define_method(:send_message) { |**kwargs| wnd_calls << kwargs }
-    end
+    stub_wnd = build_stub_wnd(wnd_calls)
 
     ExecuteScheduledActionsJob.perform_now(wnd_class: stub_wnd)
 
@@ -45,10 +39,7 @@ class ExecuteScheduledActionsJobTest < ActiveSupport::TestCase
   end
 
   test "updates last_run_at and next_run_at after execution" do
-    stub_wnd = Class.new do
-      define_method(:initialize) { |**_| }
-      define_method(:send_message) { |**_| }
-    end
+    stub_wnd = build_stub_wnd([])
 
     before_run = Time.current
     ExecuteScheduledActionsJob.perform_now(wnd_class: stub_wnd)
@@ -61,10 +52,7 @@ class ExecuteScheduledActionsJobTest < ActiveSupport::TestCase
 
   test "skips actions for stopped bots" do
     wnd_calls = []
-    stub_wnd = Class.new do
-      define_method(:initialize) { |**_| }
-      define_method(:send_message) { |**kwargs| wnd_calls << kwargs }
-    end
+    stub_wnd = build_stub_wnd(wnd_calls)
 
     scheduled_actions(:daily_report).update!(next_run_at: 1.hour.ago)
 
@@ -83,10 +71,7 @@ class ExecuteScheduledActionsJobTest < ActiveSupport::TestCase
     action.update_columns(next_run_at: 1.hour.ago)
 
     wnd_calls = []
-    stub_wnd = Class.new do
-      define_method(:initialize) { |**_| }
-      define_method(:send_message) { |**kwargs| wnd_calls << kwargs }
-    end
+    stub_wnd = build_stub_wnd(wnd_calls)
 
     ExecuteScheduledActionsJob.perform_now(wnd_class: stub_wnd)
 
@@ -94,11 +79,24 @@ class ExecuteScheduledActionsJobTest < ActiveSupport::TestCase
     assert_empty script_calls
   end
 
+  test "scheduled script can access wnd" do
+    action = ScheduledAction.create!(
+      bot: @bot, name: "Wnd test", schedule: "0 * * * *",
+      group_ids: ["wndgroup"], script_body: 'wnd.groups; nil'
+    )
+    action.update_columns(next_run_at: 1.hour.ago)
+
+    wnd_calls = []
+    stub_wnd = build_stub_wnd(wnd_calls)
+
+    ExecuteScheduledActionsJob.perform_now(wnd_class: stub_wnd)
+
+    errors = @bot.message_logs.where(direction: "error", group_id: "wndgroup")
+    assert_empty errors, "Expected no script errors, got: #{errors.map(&:content)}"
+  end
+
   test "skips disabled actions even if due" do
-    stub_wnd = Class.new do
-      define_method(:initialize) { |**_| }
-      define_method(:send_message) { |**_| }
-    end
+    stub_wnd = build_stub_wnd([])
 
     disabled = scheduled_actions(:disabled_action)
     assert disabled.next_run_at <= Time.current
@@ -108,5 +106,16 @@ class ExecuteScheduledActionsJobTest < ActiveSupport::TestCase
 
     disabled.reload
     assert_nil disabled.last_run_at
+  end
+
+  private
+
+  def build_stub_wnd(calls)
+    Class.new do
+      define_method(:initialize) { |**_| }
+      define_method(:send_message) { |**kwargs| calls << kwargs }
+      define_method(:method_missing) { |name, **_| nil unless name == :send_message }
+      define_method(:respond_to_missing?) { |_, _| true }
+    end
   end
 end

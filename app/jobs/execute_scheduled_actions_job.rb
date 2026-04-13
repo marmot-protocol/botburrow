@@ -32,10 +32,12 @@ class ExecuteScheduledActionsJob < ApplicationJob
         content: text, direction: "outgoing", message_at: Time.current
       )
     }
+    script_wnd = Wnd::ScriptClient.new(wnd, account: action.bot.npub)
     context = ScriptContext.new(
       bot: action.bot, group_id: group_id,
       author: nil, message: nil, args: nil,
-      sender: sender
+      sender: sender,
+      wnd: script_wnd
     )
     response = ScriptRunner.execute(action.script_body, context, bot: action.bot, group_id: group_id)
     sender.call(response) if response.present?

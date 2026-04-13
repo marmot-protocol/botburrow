@@ -131,6 +131,16 @@ class ScriptRunnerTest < ActiveSupport::TestCase
     assert_equal "Author: alice", result
   end
 
+  test "script can access wnd methods" do
+    fake_wnd = Struct.new(:result).new("alice_profile")
+    fake_wnd.define_singleton_method(:user) { |_pubkey| result }
+
+    ctx = build_context(wnd: fake_wnd)
+    result = ScriptRunner.execute('wnd.user(author)', ctx, bot: @bot, group_id: @group_id)
+
+    assert_equal "alice_profile", result
+  end
+
   test "script can send multiple messages" do
     sent = []
     ctx = build_context(sender: ->(text) { sent << text })
@@ -154,11 +164,11 @@ class ScriptRunnerTest < ActiveSupport::TestCase
 
   private
 
-  def build_context(sender: nil)
+  def build_context(sender: nil, wnd: nil)
     ScriptContext.new(
       bot: @bot, group_id: @group_id,
       author: "alice", message: "test", args: nil,
-      sender: sender
+      sender: sender, wnd: wnd
     )
   end
 

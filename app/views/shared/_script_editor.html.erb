@@ -38,6 +38,21 @@
     </div>
 
     <div>
+      <h4 class="font-medium text-text mb-1">Network (wnd)</h4>
+      <table class="w-full">
+        <tbody class="divide-y divide-border text-text-muted">
+          <tr><td class="py-1 pr-3 font-mono text-primary">wnd.user(pubkey)</td><td class="py-1">Look up a user's profile by public key</td></tr>
+          <tr><td class="py-1 pr-3 font-mono text-primary">wnd.members(group_id)</td><td class="py-1">List members of a group</td></tr>
+          <tr><td class="py-1 pr-3 font-mono text-primary">wnd.profile</td><td class="py-1">The bot's own profile</td></tr>
+          <tr><td class="py-1 pr-3 font-mono text-primary">wnd.groups</td><td class="py-1">List groups the bot is in</td></tr>
+          <tr><td class="py-1 pr-3 font-mono text-primary">wnd.invites</td><td class="py-1">List pending group invitations</td></tr>
+          <tr><td class="py-1 pr-3 font-mono text-primary">wnd.accept_invite(group_id)</td><td class="py-1">Accept a group invitation</td></tr>
+          <tr><td class="py-1 pr-3 font-mono text-primary">wnd.decline_invite(group_id)</td><td class="py-1">Decline a group invitation</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
       <h4 class="font-medium text-text mb-1">Tips</h4>
       <ul class="list-disc pl-4 text-text-muted space-y-0.5">
         <li>Return a string to send one final reply. Return <code class="text-primary">nil</code> to stay silent.</li>
@@ -90,6 +105,14 @@ store[key] = (store[key] || 0) + 1
           <p class="text-text-muted mb-1">Daily greeting (scheduled action):</p>
           <pre class="rounded bg-surface px-3 py-2 font-mono text-text overflow-x-auto" data-controller="codemirror-readonly">greetings = ["Good morning!", "Rise and shine!", "Hello, world!"]
 greetings.sample</pre>
+        </div>
+
+        <div>
+          <p class="text-text-muted mb-1">Who said that:</p>
+          <pre class="rounded bg-surface px-3 py-2 font-mono text-text overflow-x-auto" data-controller="codemirror-readonly">profile = wnd.user(author)
+meta = profile&.dig("metadata") || {}
+name = meta["display_name"].presence || meta["name"].presence || "unknown"
+"That was #{name}"</pre>
         </div>
 
         <div>

@@ -66,7 +66,8 @@ class MessageDispatcher
     context = ScriptContext.new(
       bot: @bot, group_id: @group_id,
       author: author, message: content, args: args_text,
-      sender: method(:send_reply)
+      sender: method(:send_reply),
+      wnd: build_script_wnd
     )
     ScriptRunner.execute(command.response_text, context, bot: @bot, group_id: @group_id)
   end
@@ -75,10 +76,15 @@ class MessageDispatcher
     context = ScriptContext.new(
       bot: @bot, group_id: @group_id,
       author: author, message: content, args: nil,
-      sender: method(:send_reply)
+      sender: method(:send_reply),
+      wnd: build_script_wnd
     )
     response = ScriptRunner.execute(trigger.script_body, context, bot: @bot, group_id: @group_id)
     send_reply(response) if response.present?
+  end
+
+  def build_script_wnd
+    Wnd::ScriptClient.new(@wnd_class.new, account: @bot.npub)
   end
 
   def send_reply(message)

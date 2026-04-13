@@ -179,6 +179,33 @@ class MessageDispatcherTest < ActiveSupport::TestCase
     assert_equal "two", @wnd_calls[1][:message]
   end
 
+  test "script command can access wnd.profile" do
+    @bot.commands.create!(
+      name: "Me", pattern: "/me",
+      response_text: 'wnd.profile.to_s',
+      enabled: true
+    )
+
+    dispatch(content: "/me", author: "alice")
+
+    # wnd.profile calls profile_show on the stub, which returns nil.
+    # The script converts nil to ""; script returns empty string → no reply sent.
+    # The point is: no NoMethodError on `wnd` — it's wired up.
+    assert_no_errors_logged
+  end
+
+  test "trigger script can access wnd.user" do
+    @bot.triggers.create!(
+      name: "Whois", condition_type: :keyword,
+      condition_value: "whois", script_body: 'wnd.user(author).to_s',
+      position: 1, enabled: true
+    )
+
+    dispatch(content: "whois", author: "alice")
+
+    assert_no_errors_logged
+  end
+
   private
 
   def dispatch(content:, author:)
@@ -191,6 +218,10 @@ class MessageDispatcherTest < ActiveSupport::TestCase
       wnd.define_singleton_method(:send_message) do |**kwargs|
         calls << kwargs
       end
+      wnd.define_singleton_method(:method_missing) do |name, **_kwargs|
+        nil unless name == :send_message
+      end
+      wnd.define_singleton_method(:respond_to_missing?) { |_, _| true }
     end
   end
 
@@ -212,5 +243,10 @@ class MessageDispatcherTest < ActiveSupport::TestCase
   def last_sent_message
     assert @wnd_calls.any?, "Expected at least one sent message"
     @wnd_calls.last[:message]
+  end
+
+  def assert_no_errors_logged
+    errors = @bot.message_logs.where(direction: "error")
+    assert_empty errors, "Expected no script errors, got: #{errors.map(&:content)}"
   end
 end

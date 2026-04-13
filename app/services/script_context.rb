@@ -3,9 +3,9 @@ require "resolv"
 require "ipaddr"
 
 class ScriptContext
-  attr_reader :message, :author, :args, :bot_name, :group_id
+  attr_reader :message, :author, :args, :bot_name, :group_id, :wnd
 
-  def initialize(bot:, group_id:, author:, message:, args:, sender: nil)
+  def initialize(bot:, group_id:, author:, message:, args:, sender: nil, wnd: nil)
     @bot = bot
     @group_id = group_id
     @author = author
@@ -13,6 +13,7 @@ class ScriptContext
     @args = args
     @bot_name = bot.name
     @sender = sender
+    @wnd = wnd
   end
 
   def send_message(text)
