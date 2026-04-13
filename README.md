@@ -76,6 +76,14 @@ Botburrow talks to a single `wnd` process over its Unix socket. The `account` pa
 - **Webhook Bridge** -- Forward messages to external HTTP endpoints, receive responses back
 - **Logs & Analytics** -- Message history, uptime, activity metrics per bot
 
+## Trust Model
+
+Botburrow is designed for **single-user, self-hosted** deployments. The person running the instance is the sole administrator and controls all bots and scripts.
+
+**Bot scripts are unsandboxed Ruby.** They execute in the Rails server process with the same privileges as the application itself — similar to cron jobs or Home Assistant automations. This is by design: the operator writes their own scripts and is responsible for what they run. Scripts are given a curated API (messaging, HTTP requests, key-value storage), but they are not restricted from the broader Ruby runtime. Do not paste untrusted code into the script editor.
+
+**Protect your dashboard.** Anyone with login access can control all bots and execute code on the server. Do not expose the dashboard to the public internet without additional access controls (VPN, reverse proxy authentication, etc.).
+
 ## Self-Hosting
 
 Botburrow is designed to be self-hosted. Run it on your own hardware, a VPS, or a home server.
