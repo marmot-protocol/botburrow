@@ -15,7 +15,7 @@
 
 <div data-controller="tabs">
   <div class="mb-6 flex gap-6 border-b border-border overflow-x-auto">
-    <% %w[overview commands triggers schedules logs].each_with_index do |tab, i| %>
+    <% %w[overview commands triggers schedules files logs].each_with_index do |tab, i| %>
       <button data-tabs-target="tab" data-tabs-id="<%= tab %>" data-action="tabs#select"
         class="whitespace-nowrap border-b-2 pb-3 text-sm font-medium transition-colors
                <%= i == 0 ? 'border-primary text-text' : 'border-transparent text-text-muted' %>
@@ -41,6 +41,10 @@
 
   <div id="schedules" data-tabs-target="panel" class="hidden">
     <%= render "bots/tabs/schedules", bot: @bot %>
+  </div>
+
+  <div id="files" data-tabs-target="panel" class="hidden">
+    <%= render "bots/tabs/files", bot: @bot, tree: @tree, total_usage: @total_usage %>
   </div>
 
   <div id="logs" data-tabs-target="panel" class="hidden">

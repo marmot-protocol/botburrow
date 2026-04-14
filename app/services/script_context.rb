@@ -30,6 +30,10 @@ class ScriptContext
     @store ||= ScriptStore.new(@bot)
   end
 
+  def files
+    @files ||= ScriptFiles.new(@bot)
+  end
+
   def http_get(url, headers: {}, timeout: 10)
     uri = URI(url)
     request = Net::HTTP::Get.new(uri)

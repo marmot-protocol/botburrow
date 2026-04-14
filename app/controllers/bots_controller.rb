@@ -12,6 +12,10 @@ class BotsController < ApplicationController
     @groups = fetch_bot_groups(@bot)
     @invitations = fetch_bot_invitations unless @bot.auto_accept_invitations?
     @logs = @bot.message_logs.recent.limit(100)
+
+    script_files = ScriptFiles.new(@bot)
+    @tree = script_files.tree
+    @total_usage = script_files.total_usage
   end
 
   def new

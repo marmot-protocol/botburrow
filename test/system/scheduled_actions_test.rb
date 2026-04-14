@@ -31,7 +31,8 @@ class ScheduledActionsTest < ApplicationSystemTestCase
     click_on "Create Scheduled action"
 
     assert_text "Scheduled action was successfully created"
-    click_on "Schedules"
+    find("button[data-tabs-id='schedules']").click
+    assert_selector "#schedules", visible: true, wait: 5
     assert_text "Morning greeting"
   end
 

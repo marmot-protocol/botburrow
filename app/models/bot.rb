@@ -14,6 +14,7 @@ class Bot < ApplicationRecord
   normalizes :name, with: -> { _1.strip }
 
   after_update_commit :broadcast_status_change, if: :saved_change_to_status?
+  after_destroy_commit :cleanup_bot_files
 
   def display_npub
     Wnd::Nostr.to_npub(npub)
@@ -22,6 +23,13 @@ class Bot < ApplicationRecord
   end
 
   private
+
+  def cleanup_bot_files
+    dir = Rails.root.join("storage", "bot_files", id.to_s)
+    FileUtils.remove_entry(dir) if Dir.exist?(dir)
+  rescue => e
+    Rails.logger.error("[Bot] Failed to cleanup files for bot #{id}: #{e.message}")
+  end
 
   def broadcast_status_change
     broadcast_replace_to "bots"

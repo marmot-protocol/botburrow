@@ -38,6 +38,19 @@
     </div>
 
     <div>
+      <h4 class="font-medium text-text mb-1">Files</h4>
+      <table class="w-full">
+        <tbody class="divide-y divide-border text-text-muted">
+          <tr><td class="py-1 pr-3 font-mono text-primary">files.read(path)</td><td class="py-1">Read file contents (binary). Raises on missing file.</td></tr>
+          <tr><td class="py-1 pr-3 font-mono text-primary">files.write(path, content)</td><td class="py-1">Write a file (creates parent dirs). 25 MB limit.</td></tr>
+          <tr><td class="py-1 pr-3 font-mono text-primary">files.list(path)</td><td class="py-1">List files in a directory (default: root). Dirs end with /</td></tr>
+          <tr><td class="py-1 pr-3 font-mono text-primary">files.exists?(path)</td><td class="py-1">Check if a file or directory exists</td></tr>
+          <tr><td class="py-1 pr-3 font-mono text-primary">files.delete(path)</td><td class="py-1">Delete a file. Returns true if deleted, false if missing.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
       <h4 class="font-medium text-text mb-1">Network (wnd)</h4>
       <table class="w-full">
         <tbody class="divide-y divide-border text-text-muted">
@@ -81,6 +94,12 @@ else
   notes = store["remember_notes"] || []
   notes.empty? ? "Nothing stored." : notes.join("\n")
 end</pre>
+        </div>
+
+        <div>
+          <p class="text-text-muted mb-1">Config from file:</p>
+          <pre class="rounded bg-surface px-3 py-2 font-mono text-text overflow-x-auto" data-controller="codemirror-readonly">config = JSON.parse(files.read("config.json"))
+"Setting: #{config['greeting']}"</pre>
         </div>
 
         <div>

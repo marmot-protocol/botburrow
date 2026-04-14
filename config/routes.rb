@@ -4,6 +4,12 @@ Rails.application.routes.draw do
   resource :setup, only: [ :new, :create ], controller: "setup"
 
   resources :bots do
+    resources :files, only: [ :create ], controller: "bot_files" do
+      collection do
+        get :download
+        delete :destroy
+      end
+    end
     resources :commands, except: [ :show ] do
       patch :toggle_enabled, on: :member
     end
