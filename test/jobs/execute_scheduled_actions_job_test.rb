@@ -23,7 +23,7 @@ class ExecuteScheduledActionsJobTest < ActiveSupport::TestCase
   test "executes in multiple groups" do
     action = ScheduledAction.create!(
       bot: @bot, name: "Multi-group", schedule: "0 * * * *",
-      group_ids: ["group_a", "group_b"], script_body: '"hello"'
+      group_ids: [ "group_a", "group_b" ], script_body: '"hello"'
     )
     action.update_columns(next_run_at: 1.hour.ago)
 
@@ -34,7 +34,7 @@ class ExecuteScheduledActionsJobTest < ActiveSupport::TestCase
 
     multi_calls = wnd_calls.select { |c| c[:group_id].start_with?("group_") }
     assert_equal 2, multi_calls.size
-    assert_equal ["group_a", "group_b"], multi_calls.map { |c| c[:group_id] }.sort
+    assert_equal [ "group_a", "group_b" ], multi_calls.map { |c| c[:group_id] }.sort
     assert multi_calls.all? { |c| c[:message] == "hello" }
   end
 
@@ -66,7 +66,7 @@ class ExecuteScheduledActionsJobTest < ActiveSupport::TestCase
   test "script returning nil does not send" do
     action = ScheduledAction.create!(
       bot: @bot, name: "Silent script", schedule: "0 * * * *",
-      group_ids: ["silentgroup"], script_body: 'store["counter"] = 1; nil'
+      group_ids: [ "silentgroup" ], script_body: 'store["counter"] = 1; nil'
     )
     action.update_columns(next_run_at: 1.hour.ago)
 
@@ -82,7 +82,7 @@ class ExecuteScheduledActionsJobTest < ActiveSupport::TestCase
   test "scheduled script can access wnd" do
     action = ScheduledAction.create!(
       bot: @bot, name: "Wnd test", schedule: "0 * * * *",
-      group_ids: ["wndgroup"], script_body: 'wnd.groups; nil'
+      group_ids: [ "wndgroup" ], script_body: "wnd.groups; nil"
     )
     action.update_columns(next_run_at: 1.hour.ago)
 

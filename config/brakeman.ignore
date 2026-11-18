@@ -1,0 +1,28 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "File Access",
+      "warning_code": 16,
+      "fingerprint": "8f4be59fc7e49d31b15f2e6b471cfe4e61499792d254f3a4c5905d8d42802523",
+      "check_name": "SendFile",
+      "message": "Parameter value used in file name",
+      "file": "app/controllers/bot_files_controller.rb",
+      "line": 30,
+      "link": "https://brakemanscanner.org/docs/warning_types/file_access/",
+      "code": "send_file(ScriptFiles.new(Bot.find(params[:bot_id])).safe_path(params[:path]), :filename => File.basename(ScriptFiles.new(Bot.find(params[:bot_id])).safe_path(params[:path])), :disposition => :attachment)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "BotFilesController",
+        "method": "download"
+      },
+      "user_input": "params[:path]",
+      "confidence": "Weak",
+      "cwe_id": [
+        22
+      ],
+      "note": "ScriptFiles#safe_path confines the download parameter: it expands it under the bot's script root, rejects paths outside that root and any symlink between the file and the root, and the action 404s unless the result is a regular file. It does not check the root itself or its parents. Bot scripts are unsandboxed operator code (README, Trust Model) and can change the root or copy any readable file into it, so this check confines the request parameter, not script code."
+    }
+  ],
+  "brakeman_version": "8.1.0"
+}

@@ -17,7 +17,7 @@ class ScheduledActionsTest < ApplicationSystemTestCase
 
   test "create a scheduled action with group checkboxes" do
     @wnd_stub.stub_response(:groups_list, [
-      { "group" => { "mls_group_id" => { "value" => { "vec" => [1, 2, 3] } }, "name" => "Test Group", "state" => "active", "admin_pubkeys" => [] },
+      { "group" => { "mls_group_id" => { "value" => { "vec" => [ 1, 2, 3 ] } }, "name" => "Test Group", "state" => "active", "admin_pubkeys" => [] },
         "membership" => {} }
     ])
 
@@ -39,7 +39,7 @@ class ScheduledActionsTest < ApplicationSystemTestCase
   test "edit a scheduled action" do
     action = @bot.scheduled_actions.create!(
       name: "Old Action", schedule: "0 * * * *",
-      group_ids: ["abc"], script_body: '"hi"', enabled: true
+      group_ids: [ "abc" ], script_body: '"hi"', enabled: true
     )
 
     visit edit_bot_scheduled_action_path(@bot, action)
@@ -55,7 +55,7 @@ class ScheduledActionsTest < ApplicationSystemTestCase
   test "scheduled actions appear on bot show page" do
     @bot.scheduled_actions.create!(
       name: "Hourly Check", schedule: "0 * * * *",
-      group_ids: ["abc"], script_body: '"check"', enabled: true
+      group_ids: [ "abc" ], script_body: '"check"', enabled: true
     )
 
     visit bot_path(@bot)

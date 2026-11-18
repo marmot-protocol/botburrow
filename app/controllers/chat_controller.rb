@@ -32,8 +32,8 @@ class ChatController < ApplicationController
   end
 
   def resolve_author_names(messages)
-    pubkeys = messages.map(&:author).uniq - [@bot.npub]
-    pubkeys.to_h { |pk| [pk, resolve_peer_name(pk)] }
+    pubkeys = messages.map(&:author).uniq - [ @bot.npub ]
+    pubkeys.to_h { |pk| [ pk, resolve_peer_name(pk) ] }
   end
 
   def enrich_groups_with_activity(groups)

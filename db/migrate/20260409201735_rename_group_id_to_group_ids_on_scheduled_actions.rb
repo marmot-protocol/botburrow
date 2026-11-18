@@ -8,7 +8,7 @@ class RenameGroupIdToGroupIdsOnScheduledActions < ActiveRecord::Migration[8.1]
       next if value.blank?
       next if value.start_with?("[")
 
-      execute("UPDATE scheduled_actions SET group_ids = #{quote([value].to_json)} WHERE id = #{row['id']}")
+      execute("UPDATE scheduled_actions SET group_ids = #{quote([ value ].to_json)} WHERE id = #{row['id']}")
     end
   end
 

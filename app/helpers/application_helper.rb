@@ -25,7 +25,7 @@ module ApplicationHelper
     ), class: "h-4 w-4", viewBox: "0 0 20 20", fill: "currentColor")
 
     link_to(path, class: "mb-2 inline-flex items-center gap-1 text-sm text-text-muted hover:text-text transition-colors") do
-      safe_join([arrow, text])
+      safe_join([ arrow, text ])
     end
   end
 

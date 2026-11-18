@@ -75,7 +75,7 @@ class ScriptFilesTest < ActiveSupport::TestCase
     @files.write(".hidden", "secret")
     @files.write("visible.txt", "public")
 
-    assert_equal ["visible.txt"], @files.list
+    assert_equal [ "visible.txt" ], @files.list
   end
 
   test "list returns empty array for missing directory" do
@@ -88,7 +88,7 @@ class ScriptFilesTest < ActiveSupport::TestCase
     @files.write("mid/file.txt", "m")
 
     entries = @files.list
-    assert_equal ["mid/", "alpha.txt", "zebra.txt"], entries
+    assert_equal [ "mid/", "alpha.txt", "zebra.txt" ], entries
   end
 
   # -- Exists / Delete --

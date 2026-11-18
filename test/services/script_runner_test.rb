@@ -136,7 +136,7 @@ class ScriptRunnerTest < ActiveSupport::TestCase
     fake_wnd.define_singleton_method(:user) { |_pubkey| result }
 
     ctx = build_context(wnd: fake_wnd)
-    result = ScriptRunner.execute('wnd.user(author)', ctx, bot: @bot, group_id: @group_id)
+    result = ScriptRunner.execute("wnd.user(author)", ctx, bot: @bot, group_id: @group_id)
 
     assert_equal "alice_profile", result
   end
