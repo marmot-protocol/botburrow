@@ -4,7 +4,7 @@ class ScheduledActionTest < ActiveSupport::TestCase
   test "compute_next_run sets a future time based on cron" do
     action = ScheduledAction.new(
       bot: bots(:relay_bot), name: "Test", schedule: "0 * * * *",
-      group_ids: ["g1"], script_body: '"hi"'
+      group_ids: [ "g1" ], script_body: '"hi"'
     )
     action.compute_next_run
     assert action.next_run_at > Time.current
@@ -13,7 +13,7 @@ class ScheduledActionTest < ActiveSupport::TestCase
   test "compute_next_run with every-minute cron sets next_run within a minute" do
     action = ScheduledAction.new(
       bot: bots(:relay_bot), name: "Test", schedule: "* * * * *",
-      group_ids: ["g1"], script_body: '"hi"'
+      group_ids: [ "g1" ], script_body: '"hi"'
     )
     action.compute_next_run
     assert_in_delta Time.current + 1.minute, action.next_run_at, 60
@@ -22,7 +22,7 @@ class ScheduledActionTest < ActiveSupport::TestCase
   test "compute_next_run with daily cron sets next_run within 24 hours" do
     action = ScheduledAction.new(
       bot: bots(:relay_bot), name: "Test", schedule: "0 9 * * *",
-      group_ids: ["g1"], script_body: '"hi"'
+      group_ids: [ "g1" ], script_body: '"hi"'
     )
     action.compute_next_run
     assert action.next_run_at > Time.current
@@ -44,31 +44,31 @@ class ScheduledActionTest < ActiveSupport::TestCase
 
   test "requires a name" do
     action = ScheduledAction.new(bot: bots(:relay_bot), name: nil, schedule: "0 * * * *",
-                                 group_ids: ["g1"], script_body: '"hi"')
+                                 group_ids: [ "g1" ], script_body: '"hi"')
     assert_not action.valid?
     assert_includes action.errors[:name], "can't be blank"
   end
 
   test "requires a schedule" do
     action = ScheduledAction.new(bot: bots(:relay_bot), name: "Test", schedule: nil,
-                                 group_ids: ["g1"], script_body: '"hi"')
+                                 group_ids: [ "g1" ], script_body: '"hi"')
     assert_not action.valid?
     assert_includes action.errors[:schedule], "can't be blank"
   end
 
   test "rejects invalid cron expressions" do
-    ["not a cron", "* * *", "60 * * * *", "random"].each do |bad|
+    [ "not a cron", "* * *", "60 * * * *", "random" ].each do |bad|
       action = ScheduledAction.new(bot: bots(:relay_bot), name: "Test", schedule: bad,
-                                   group_ids: ["g1"], script_body: '"hi"')
+                                   group_ids: [ "g1" ], script_body: '"hi"')
       assert_not action.valid?, "Expected '#{bad}' to be invalid"
       assert_includes action.errors[:schedule], "is not a valid cron expression"
     end
   end
 
   test "accepts valid cron expressions" do
-    ["* * * * *", "*/30 * * * *", "0 9 * * *", "0 9 * * 1", "0 0 1 * *", "0 */2 * * *"].each do |good|
+    [ "* * * * *", "*/30 * * * *", "0 9 * * *", "0 9 * * 1", "0 0 1 * *", "0 */2 * * *" ].each do |good|
       action = ScheduledAction.new(bot: bots(:relay_bot), name: "Test", schedule: good,
-                                   group_ids: ["g1"], script_body: '"hi"')
+                                   group_ids: [ "g1" ], script_body: '"hi"')
       assert action.valid?, "Expected '#{good}' to be valid, got: #{action.errors.full_messages}"
     end
   end
@@ -82,14 +82,14 @@ class ScheduledActionTest < ActiveSupport::TestCase
 
   test "requires script_body" do
     action = ScheduledAction.new(bot: bots(:relay_bot), name: "Test", schedule: "0 * * * *",
-                                 group_ids: ["g1"], script_body: nil)
+                                 group_ids: [ "g1" ], script_body: nil)
     assert_not action.valid?
     assert_includes action.errors[:script_body], "can't be blank"
   end
 
   test "validates script_body syntax" do
     action = ScheduledAction.new(bot: bots(:relay_bot), name: "Test", schedule: "0 * * * *",
-                                 group_ids: ["g1"], script_body: "def foo(")
+                                 group_ids: [ "g1" ], script_body: "def foo(")
     assert_not action.valid?
     assert action.errors[:script_body].any? { |e| e.include?("syntax error") }
   end
@@ -97,16 +97,16 @@ class ScheduledActionTest < ActiveSupport::TestCase
   test "stores multiple group_ids" do
     action = ScheduledAction.create!(
       bot: bots(:relay_bot), name: "Multi", schedule: "0 * * * *",
-      group_ids: ["g1", "g2", "g3"], script_body: '"hi"'
+      group_ids: [ "g1", "g2", "g3" ], script_body: '"hi"'
     )
     action.reload
-    assert_equal ["g1", "g2", "g3"], action.group_ids
+    assert_equal [ "g1", "g2", "g3" ], action.group_ids
   end
 
   test "name is stripped of whitespace" do
     action = ScheduledAction.new(
       bot: bots(:relay_bot), name: "  Spaced  ", schedule: "0 * * * *",
-      group_ids: ["g1"], script_body: '"hi"'
+      group_ids: [ "g1" ], script_body: '"hi"'
     )
     assert_equal "Spaced", action.name
   end

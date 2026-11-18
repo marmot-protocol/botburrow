@@ -53,7 +53,7 @@ class ScheduledActionsControllerTest < ActionDispatch::IntegrationTest
         scheduled_action: {
           name: "Morning greeting",
           schedule: "0 * * * *",
-          group_ids: ["g1", "g2"],
+          group_ids: [ "g1", "g2" ],
           script_body: '"Hello!"',
           enabled: "1"
         }
@@ -62,7 +62,7 @@ class ScheduledActionsControllerTest < ActionDispatch::IntegrationTest
 
     action = ScheduledAction.last
     assert_equal "Morning greeting", action.name
-    assert_equal ["g1", "g2"], action.group_ids
+    assert_equal [ "g1", "g2" ], action.group_ids
     assert action.enabled?
     assert_not_nil action.next_run_at
     assert_redirected_to bot_path(@bot, anchor: "schedules")
@@ -71,7 +71,7 @@ class ScheduledActionsControllerTest < ActionDispatch::IntegrationTest
   test "creating with invalid data re-renders form" do
     assert_no_difference "ScheduledAction.count" do
       post bot_scheduled_actions_path(@bot), params: {
-        scheduled_action: { name: "", schedule: "", group_ids: [""], script_body: "" }
+        scheduled_action: { name: "", schedule: "", group_ids: [ "" ], script_body: "" }
       }
     end
 
@@ -84,7 +84,7 @@ class ScheduledActionsControllerTest < ActionDispatch::IntegrationTest
         scheduled_action: {
           name: "Bad script",
           schedule: "0 * * * *",
-          group_ids: ["g1"],
+          group_ids: [ "g1" ],
           script_body: "def foo(",
           enabled: "1"
         }

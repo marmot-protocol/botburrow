@@ -182,7 +182,7 @@ class MessageDispatcherTest < ActiveSupport::TestCase
   test "script command can access wnd.profile" do
     @bot.commands.create!(
       name: "Me", pattern: "/me",
-      response_text: 'wnd.profile.to_s',
+      response_text: "wnd.profile.to_s",
       enabled: true
     )
 
@@ -197,7 +197,7 @@ class MessageDispatcherTest < ActiveSupport::TestCase
   test "trigger script can access wnd.user" do
     @bot.triggers.create!(
       name: "Whois", condition_type: :keyword,
-      condition_value: "whois", script_body: 'wnd.user(author).to_s',
+      condition_value: "whois", script_body: "wnd.user(author).to_s",
       position: 1, enabled: true
     )
 
