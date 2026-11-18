@@ -21,7 +21,7 @@
       "cwe_id": [
         22
       ],
-      "note": "ScriptFiles#safe_path expands the path under the bot's script root, rejects paths outside it and any symlink between the file and that root, and the action 404s unless the result is a regular file. The root and its parent directories are operator-controlled storage and are not checked."
+      "note": "ScriptFiles#safe_path confines the download parameter: it expands it under the bot's script root, rejects paths outside that root and any symlink between the file and the root, and the action 404s unless the result is a regular file. It does not check the root itself or its parents. Bot scripts are unsandboxed operator code (README, Trust Model) and can change the root or copy any readable file into it, so this check confines the request parameter, not script code."
     }
   ],
   "brakeman_version": "8.1.0"
