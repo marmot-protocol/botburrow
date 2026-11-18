@@ -1,0 +1,28 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "File Access",
+      "warning_code": 16,
+      "fingerprint": "8f4be59fc7e49d31b15f2e6b471cfe4e61499792d254f3a4c5905d8d42802523",
+      "check_name": "SendFile",
+      "message": "Parameter value used in file name",
+      "file": "app/controllers/bot_files_controller.rb",
+      "line": 30,
+      "link": "https://brakemanscanner.org/docs/warning_types/file_access/",
+      "code": "send_file(ScriptFiles.new(Bot.find(params[:bot_id])).safe_path(params[:path]), :filename => File.basename(ScriptFiles.new(Bot.find(params[:bot_id])).safe_path(params[:path])), :disposition => :attachment)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "BotFilesController",
+        "method": "download"
+      },
+      "user_input": "params[:path]",
+      "confidence": "Weak",
+      "cwe_id": [
+        22
+      ],
+      "note": "ScriptFiles#safe_path expands the path under the bot's script root, rejects paths outside it and any symlinked component, and the action 404s unless the result is a regular file."
+    }
+  ],
+  "brakeman_version": "8.1.0"
+}
