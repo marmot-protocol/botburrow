@@ -72,7 +72,7 @@ class TriggerTest < ActiveSupport::TestCase
   test "trigger does not require condition_value for any type" do
     trigger = Trigger.new(bot: bots(:relay_bot), name: "Test",
                           condition_type: :any, condition_value: nil,
-                          script_body: 'nil')
+                          script_body: "nil")
     assert trigger.valid?
   end
 

@@ -8,7 +8,7 @@ class ChatControllerTest < ActionDispatch::IntegrationTest
     @bot = bots(:relay_bot)
     @wnd_stub = WndStubFactory.new
     @wnd_stub.stub_response(:groups_list, [
-      { "group" => { "mls_group_id" => { "value" => { "vec" => [1, 2, 3] } }, "name" => "Test Group", "state" => "active", "admin_pubkeys" => [] },
+      { "group" => { "mls_group_id" => { "value" => { "vec" => [ 1, 2, 3 ] } }, "name" => "Test Group", "state" => "active", "admin_pubkeys" => [] },
         "membership" => {} }
     ])
     ChatController.wnd_client_class = @wnd_stub
