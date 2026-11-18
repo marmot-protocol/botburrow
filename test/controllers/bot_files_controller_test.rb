@@ -52,8 +52,8 @@ class BotFilesControllerTest < ActionDispatch::IntegrationTest
     post bot_files_path(@bot), params: { file: file }
     assert_redirected_to bot_path(@bot, anchor: "files")
 
-    assert File.exist?(File.join(@tmp_root, "passwd"))
-    assert_not File.exist?(File.join(@tmp_root, "..", "..", "..", "etc", "passwd"))
+    assert_equal [ "passwd" ], Dir.children(@tmp_root)
+    assert_equal "test file content", File.read(File.join(@tmp_root, "passwd"))
   end
 
   # -- Download --
