@@ -21,7 +21,7 @@
       "cwe_id": [
         22
       ],
-      "note": "ScriptFiles#safe_path expands the path under the bot's script root, rejects paths outside it and any symlinked component, and the action 404s unless the result is a regular file."
+      "note": "ScriptFiles#safe_path expands the path under the bot's script root, rejects paths outside it and any symlink between the file and that root, and the action 404s unless the result is a regular file. The root and its parent directories are operator-controlled storage and are not checked."
     }
   ],
   "brakeman_version": "8.1.0"
